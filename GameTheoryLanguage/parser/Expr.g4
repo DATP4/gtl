@@ -15,6 +15,21 @@ strat_s : STRATEGYSET name EQUALS strat_arr ;
 act     : ACTION name EQUALS LCURL state RCURL ;
 
 
+act_t   : CUSTOM | DEFAULT ;
+
+act_c   : INT | (pl_id) (COMMA pl_id)* |  ;
+
+pl_id   : name ;
+
+s_c     : x COLON state | OTHER COLON state ;
+
+d_v     : t x EQUALS x;
+d_f     : x COLON LPAR (arg_v) RPAR ARROW t LCURL state RCURL;
+
+arg_v   : (t x) (COMMA t x)* ; 
+arg_x   : x (COMMA x)* ;
+
+
 state   : state SEMICOLON state
         | IF LPAR b_expr RPAR THEN LCURL state RCURL
         | IF LPAR b_expr RPAR THEN LCURL state RCURL ELSE LCURL state RCURL
@@ -47,24 +62,7 @@ expr    : LPAR expr RPAR
         | string
         | BOOL
         | d_v
-        | LPAR expr RPAR
         ;
-
-act_t   : CUSTOM | DEFAULT ;
-
-act_c   : INT | (pl_id) (COMMA pl_id)* |  ;
-
-pl_id   : name ;
-
-s_c     : x COLON state | OTHER COLON state ;
-
-d_f     : x COLON LPAR (arg_v) RPAR ARROW t LCURL state RCURL;
-
-arg_v   : (t x) (COMMA t x)* ; 
-arg_x   : x (COMMA x)* ;
-
-d_v     : t x EQUALS x;
-
 
 x       : INT 
         | REAL 
