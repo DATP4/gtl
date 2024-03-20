@@ -4,7 +4,7 @@ using Antlr4.Runtime.Tree;
 static void MyParseMethod()
 {
     // Read input from a file
-    string filePath = "GameTheoryLanguage/parser/input.gtl"; // Update the file path accordingly
+    string filePath = "parser/input.gtl"; // Update the file path accordingly
     string input = File.ReadAllText(filePath);
 
     // Create a stream from the input string
@@ -19,7 +19,7 @@ static void MyParseMethod()
 
     // Create a parser
     GtlParser parser = new(tokens);
-    IParseTree tree = parser.expr();
+    IParseTree tree = parser.program();
 
     Console.WriteLine(tree.ToStringTree(parser));
 }

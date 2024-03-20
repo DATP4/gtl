@@ -1,1 +1,37 @@
-Int a = 24 + 25
+Action history = {
+    if (gamestate().opponent().lastmove() == cooperate) then {
+        return deflect;
+    }
+}
+
+Action turn = {
+    if (gamestate().turn() == 4) then {
+        return cooperate;
+    }
+}
+
+Strategy aStrat1 -> cooperate, deflect {
+    history,
+    turn;
+}
+
+Strategy aStrat2 -> deflect {
+    history;
+}
+
+StrategySet stratset = [
+    (cooperate, cooperate),
+    (cooperate, deflect),
+    (deflect, cooperate),
+    (deflect, deflect)
+]
+
+Payoffs payoff() = {
+    p1 -> [1,4,0,2],
+    p2 -> [1,0,4,2]
+}
+
+Player aske(aStrat2);
+Player martin(aStrat1);
+
+Game prisoners([aske, martin], stratset, payoff());

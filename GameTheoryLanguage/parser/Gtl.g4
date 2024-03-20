@@ -1,128 +1,195 @@
+// words starting without capital letter are parser rules
+// words starting with capital letter are lexer rules (All
+// caps for readability)
+
 grammar Gtl;
 
-prog    : strat EOF ;
+// Start of the program
+program
+    : list_of_statements EOF
+    ;
 
-gam     : GAME name LPAR arr COMMA name COMMA name RPAR ;
+// Statements
+list_of_statements
+    : statement*
+    ;
 
-pay     : PAYOFFS name EQUALS LCURL name ARROW arr (COMMA name ARROW arr)* RCURL ;
+statement
+    : declaration
+    | assignment
+    | function // ?????
+    | if
+    | return
+    | game
+    | payoff
+    | player
+    | strategy
+    | strategy_set
+    | action
+    ;
 
-pl      : PLAYER pl_id LPAR name RPAR ;
+// Control structures
+return
+    : RETURN expr? SEMICOLON
+    ;
 
-strat   : STRATEGY name ARROW arg_x LCURL name (COMMA name)* RCURL ;
+if
+    : IF LPAR b_expr RPAR THEN LCURL list_of_statements RCURL (elseif | else)?
+    ;
 
-strat_s : STRATEGYSET name EQUALS strat_arr ;
+elseif
+    : ELSE IF LPAR b_expr RPAR THEN LCURL list_of_statements RCURL (elseif | else)?
+    ;
 
-act     : ACTION name EQUALS LCURL state RCURL ;
+else
+    : ELSE LCURL list_of_statements RCURL
+    ;
 
+// Declarations
+declaration
+    : type ID ASSIGN expr SEMICOLON
+    ;
 
-act_t   : CUSTOM | DEFAULT ;
+// Assignment
+assignment
+    : ID ASSIGN expr SEMICOLON
+    ;
 
-act_c   : INT | (pl_id) (COMMA pl_id)* |  ;
+// Functions
+function
+    : ID COLON LPAR arg_def RPAR R_ARROW type LCURL statement RCURL
+    ;
 
-pl_id   : name ;
+// Argument definitions
+arg_def
+    : ((type ID) (COMMA type ID)*)?
+    ;
 
-s_c     : x COLON state | OTHER COLON state ;
+arg_strategy
+    : ID (COMMA ID)*
+    ;
 
-d_v     : t x EQUALS x;
-d_f     : x COLON LPAR (arg_v) RPAR ARROW t LCURL state RCURL;
+arg_call
+    : (expr (COMMA expr)*)?
+    ;
 
-arg_v   : (t x) (COMMA t x)* ; 
-arg_x   : x (COMMA x)* ;
+arg_chain
+    : DOT arg_call
+    ;
 
+// Expressions
+expr
+    : LPAR expr RPAR
+    | ID LPAR arg_call RPAR arg_chain*
+    | expr (MUL | DIV) expr
+    | expr (PLUS | MINUS) expr
+    | expr MOD expr
+    | array
+    | INT
+    | BOOL
+    | move
+    ;
 
-state   : state SEMICOLON state
-        | IF LPAR b_expr RPAR THEN LCURL state RCURL
-        | IF LPAR b_expr RPAR THEN LCURL state RCURL ELSE LCURL state RCURL
-        | IS x LPAR (s_c)+ RPAR
-        | BREAK
-        | RETURN x
-        | d_f
-        | d_v
-        | x EQUALS expr
-        ;
+b_expr
+    : expr BEQUALS expr
+    | expr GREATER expr
+    | expr LESS expr
+    | expr LESSEQ expr
+    | expr GREATEREQ expr
+    | expr NOTEQ expr
+    | b_expr AND b_expr
+    | b_expr OR b_expr
+    | b_expr XOR b_expr
+    | NOT b_expr
+    ;
 
-b_expr  : expr BEQUALS expr
-        | expr GREATER expr
-        | expr LESS expr
-        | expr LESSEQ expr
-        | expr GREATEREQ expr
-        | expr NOTEQ expr
-        | b_expr AND b_expr
-        | b_expr OR b_expr
-        | b_expr XOR b_expr
-        | NOT b_expr
-        ;
+// Types
+type
+    : T_INT
+    | T_REAL
+    | T_BOOL
+    ;
 
+// Arrays
+array
+    : LSQUARE expr(COMMA expr)* RSQUARE
+    ;
 
-expr    : LPAR expr RPAR
-        | expr (MUL | DIV) expr
-        | expr (PLUS | MINUS) expr
-        | expr MOD expr
-        | INT
-        | string
-        | BOOL
-        | d_v
-        ;
+strategy_set_array
+    : LSQUARE move_tuple (COMMA move_tuple)* RSQUARE
+    ;
 
-x       : INT 
-        | REAL 
-        | CHAR 
-        | string 
-        | BOOL 
-        ;
+// Game theory specific grammar
+move
+    : ID
+    ;
 
-t       : T_INT
-        | T_REAL
-        | T_CHAR
-        | T_STRING
-        | T_BOOL
-        ;
+move_tuple
+    : LPAR move (COMMA move)* RPAR
+    ;
 
-arr     : LCURL element RCURL ;
-strat_arr: LCURL LPAR element RPAR (COMMA LPAR element RPAR)* RCURL ;
+game
+    : GAME ID LPAR array COMMA ID COMMA expr RPAR SEMICOLON
+    ;
 
-element : name (COMMA name)* ;
+payoff
+    : PAYOFFS ID LPAR RPAR ASSIGN LCURL ID R_ARROW array (COMMA ID R_ARROW array)* RCURL
+    ;
 
-GAME    : 'Game' ;
-ACTION  : 'Action' ;
-STRATEGY: 'Strategy' ;
-PLAYER  : 'Player' ;
-PAYOFFS : 'Payoffs' ;
-STRATEGYSET: 'StrategySet' ;
+player
+    : PLAYER ID LPAR ID RPAR SEMICOLON
+    ;
 
-CUSTOM  : 'custom' ;
-DEFAULT : 'default' ;
-OTHER   : 'other' ;
+strategy
+    : STRATEGY ID R_ARROW arg_strategy LCURL ID (COMMA ID)* SEMICOLON RCURL
+    ;
 
-IF      : 'if' ;
-THEN    : 'then' ;
-ELSE    : 'else' ;
-IS      : 'is' ;
-BREAK   : 'break' ;
-RETURN  : 'return' ;
+strategy_set
+    : STRATEGYSET ID ASSIGN strategy_set_array
+    ;
 
-LPAR    : '(' ;
-RPAR    : ')' ;
-LCURL   : '{' ;
-RCURL   : '}' ;
-COLON   : ':' ;
-SEMICOLON: ';' ;
-COMMA   : ',' ;
+action
+    : ACTION ID ASSIGN LCURL list_of_statements RCURL
+    ;
 
-T_INT   : 'int' ;
-T_REAL  : 'real' ;
-T_CHAR  : 'char' ;
-T_STRING: 'String' ;
-T_BOOL  : 'bool' ;
+// Lexer rules
+T_INT   : 'int';
+T_REAL  : 'real';
+T_BOOL  : 'bool';
+
+GAME    : 'Game';
+ACTION  : 'Action';
+STRATEGY: 'Strategy';
+PLAYER  : 'Player';
+PAYOFFS : 'Payoffs';
+STRATEGYSET: 'StrategySet';
+
+IF      : 'if';
+THEN    : 'then';
+ELSE    : 'else';
+IS      : 'is';
+BREAK   : 'break';
+RETURN  : 'return';
+
+ASSIGN  : '=';
+R_ARROW : '->';
+
+LPAR    : '(';
+RPAR    : ')';
+LCURL   : '{';
+RCURL   : '}';
+LSQUARE : '[';
+RSQUARE : ']';
+COLON   : ':';
+SEMICOLON: ';';
+COMMA   : ',';
+DOT     : '.';
 
 PLUS    : '+';
 MINUS   : '-';
 MUL     : '*';
 DIV     : '/';
 MOD     : 'mod';
-
-EQUALS  : '=' ;
-ARROW   : '->' ;
 
 BEQUALS : '==';
 GREATER : '>';
@@ -135,12 +202,11 @@ OR      : '||';
 XOR     : '^^';
 NOT     : '!';
 
-name    : (CHAR | INT)+ ;
-string  : '"'(CHAR)+'"' ;
-INT     : [0-9] ;
+LITERAL : INT | REAL;
+ID      : [a-zA-Z_][a-zA-Z_0-9]*;
+INT     : [0-9]+;
 REAL    : [0-9]+ ('.' [0-9]+)?;
-CHAR    : [a-zA-Z] ;
-BOOL    : 'TRUE' | 'FALSE' ;
+BOOL    : 'TRUE' | 'FALSE';
 
 WS      : [ \t\r\n]+ -> skip;
-CM      : '//' ~[\r\n]* -> skip;
+COMMENT : '//' ~[\r\n]* -> skip;
