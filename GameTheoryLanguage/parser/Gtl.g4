@@ -1,4 +1,4 @@
-grammar Expr;		
+grammar Gtl;
 
 prog    : strat EOF ;
 
@@ -50,13 +50,13 @@ b_expr  : expr BEQUALS expr
         | b_expr AND b_expr
         | b_expr OR b_expr
         | b_expr XOR b_expr
-        | NOT b_expr 
+        | NOT b_expr
         ;
 
 
-expr    : LPAR expr RPAR 
+expr    : LPAR expr RPAR
         | expr (MUL | DIV) expr
-        | expr (PLUS | MINUS) expr 
+        | expr (PLUS | MINUS) expr
         | expr MOD expr
         | INT
         | string
@@ -70,12 +70,12 @@ x       : INT
         | string 
         | BOOL 
         ;
-        
+
 t       : T_INT
-        | T_REAL 
+        | T_REAL
         | T_CHAR
-        | T_STRING 
-        | T_BOOL 
+        | T_STRING
+        | T_BOOL
         ;
 
 arr     : LCURL element RCURL ;
@@ -139,7 +139,7 @@ name    : (CHAR | INT)+ ;
 string  : '"'(CHAR)+'"' ;
 INT     : [0-9] ;
 REAL    : [0-9]+ ('.' [0-9]+)?;
-CHAR    : [a-zA-Z] ; 
+CHAR    : [a-zA-Z] ;
 BOOL    : 'TRUE' | 'FALSE' ;
 
 WS      : [ \t\r\n]+ -> skip;

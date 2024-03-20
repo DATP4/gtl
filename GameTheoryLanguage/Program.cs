@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 
 static void MyParseMethod()
 {
@@ -10,23 +11,17 @@ static void MyParseMethod()
     ICharStream stream = CharStreams.fromString(input);
 
     // Create a lexer
-    ITokenSource lexer = new ExprLexer(stream);
+    ITokenSource lexer = new GtlLexer(stream);
 
     // Create a token stream
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-    // Print the different tokens
-    tokens.Fill();
-    foreach (var token in tokens.GetTokens())
-    {
-        Console.WriteLine("Token: " + token);
-    }
-
-    // Reset the token stream position to the beginning
-    tokens.Reset();
+    // Change this to ITokenStream
+    CommonTokenStream tokens = new(lexer);
 
     // Create a parser
-    ExprParser parser = new ExprParser(tokens);
+    GtlParser parser = new(tokens);
+    IParseTree tree = parser.expr();
+
+    Console.WriteLine(tree.ToStringTree(parser));
 }
 
 MyParseMethod();
