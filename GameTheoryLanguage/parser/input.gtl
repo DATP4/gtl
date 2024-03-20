@@ -1,1 +1,1 @@
-int 23 + bool 23 == int 24 * int 24
+Int a = 24 + 25
