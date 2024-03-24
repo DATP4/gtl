@@ -1,6 +1,31 @@
+int someVar = 3;
+
+intFunction : (int someVar) -> int {
+    int y = x + 10 * 5;
+
+    if (x < 10 * 5) then {
+        int z = 10 / 5;
+    }
+
+    return x - 5;
+}
+
+intFunction(5);
+
+boolFunction : () -> bool {
+    return TRUE;
+}
+
+bool a = boolFunction();
+
+// Declare a history action
 Action history = {
     if (gamestate().opponent().lastmove() == cooperate) then {
         return deflect;
+    } else if (gamestate().opponent().lastmove() == deflect) then {
+        return cooperate;
+    } else  {
+        return turn;
     }
 }
 
