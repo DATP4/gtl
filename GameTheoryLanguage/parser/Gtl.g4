@@ -6,20 +6,17 @@ grammar Gtl;
 
 // Start of the program
 program
-    : list_of_statements EOF
+    : (statement)+ EOF
     ;
 
 // Statements
-list_of_statements
-    : statement*
-    ;
-
 statement
-    : declaration
-    | assignment
-    | function // ?????
-    | if
+    : expr SEMICOLON
+    | declaration
+    | function
     | return
+    | if
+    | break
     | game
     | payoff
     | player
@@ -28,21 +25,27 @@ statement
     | action
     ;
 
-// Control structures
-return
-    : RETURN expr? SEMICOLON
-    ;
-
-if
-    : IF LPAR b_expr RPAR THEN LCURL list_of_statements RCURL (elseif | else)?
-    ;
-
-elseif
-    : ELSE IF LPAR b_expr RPAR THEN LCURL list_of_statements RCURL (elseif | else)?
-    ;
-
-else
-    : ELSE LCURL list_of_statements RCURL
+// Expressions
+expr
+    : LITERAL                           # LiteralExpr
+    | ID                                # IdExpr
+    | array                             # ArrayExpr
+    | LPAR expr RPAR                    # ParExpr
+    | ID LPAR arg_call RPAR             # ArgCallExpr
+    | expr DOT ID LPAR arg_call RPAR    # ChainArgCallExpr
+    | expr op=(MUL | DIV) expr          # BinaryExpr
+    | expr op=(PLUS | MINUS) expr       # BinaryExpr
+    | expr op=MOD expr                  # BooleanExpr
+    | expr op=EQUALS expr               # BooleanExpr
+    | expr op=GREATER expr              # BooleanExpr
+    | expr op=LESS expr                 # BooleanExpr
+    | expr op=LESSEQ expr               # BooleanExpr
+    | expr op=GREATEREQ expr            # BooleanExpr
+    | expr op=NOTEQ expr                # BooleanExpr
+    | expr op=AND expr                  # BooleanExpr
+    | expr op=OR expr                   # BooleanExpr
+    | expr op=XOR expr                  # BooleanExpr
+    | NOT expr                          # LogicalNotExpr
     ;
 
 // Declarations
@@ -50,14 +53,30 @@ declaration
     : type ID ASSIGN expr SEMICOLON
     ;
 
-// Assignment
-assignment
-    : ID ASSIGN expr SEMICOLON
-    ;
-
 // Functions
 function
-    : ID COLON LPAR arg_def RPAR R_ARROW type LCURL statement RCURL
+    : ID COLON LPAR arg_def RPAR R_ARROW type LCURL (statement)* RCURL
+    ;
+
+return
+    : RETURN expr? SEMICOLON
+    ;
+
+// Control structures
+if
+    : IF LPAR expr RPAR THEN LCURL (statement)* RCURL (elseif | else)?
+    ;
+
+elseif
+    : ELSE IF LPAR expr RPAR THEN LCURL (statement)* RCURL (elseif | else)?
+    ;
+
+else
+    : ELSE LCURL (statement)* RCURL
+    ;
+
+break
+    : BREAK SEMICOLON
     ;
 
 // Argument definitions
@@ -73,46 +92,9 @@ arg_call
     : (expr (COMMA expr)*)?
     ;
 
-arg_chain
-    : DOT arg_call
-    ;
-
-// Expressions
-expr
-    : LPAR expr RPAR
-    | ID LPAR arg_call RPAR arg_chain*
-    | expr (MUL | DIV) expr
-    | expr (PLUS | MINUS) expr
-    | expr MOD expr
-    | array
-    | INT
-    | BOOL
-    | move
-    ;
-
-b_expr
-    : expr BEQUALS expr
-    | expr GREATER expr
-    | expr LESS expr
-    | expr LESSEQ expr
-    | expr GREATEREQ expr
-    | expr NOTEQ expr
-    | b_expr AND b_expr
-    | b_expr OR b_expr
-    | b_expr XOR b_expr
-    | NOT b_expr
-    ;
-
-// Types
-type
-    : T_INT
-    | T_REAL
-    | T_BOOL
-    ;
-
 // Arrays
 array
-    : LSQUARE expr(COMMA expr)* RSQUARE
+    : LSQUARE expr (COMMA expr)* RSQUARE
     ;
 
 strategy_set_array
@@ -120,12 +102,8 @@ strategy_set_array
     ;
 
 // Game theory specific grammar
-move
-    : ID
-    ;
-
 move_tuple
-    : LPAR move (COMMA move)* RPAR
+    : LPAR ID (COMMA ID)* RPAR
     ;
 
 game
@@ -149,7 +127,14 @@ strategy_set
     ;
 
 action
-    : ACTION ID ASSIGN LCURL list_of_statements RCURL
+    : ACTION ID ASSIGN LCURL (statement)+ RCURL
+    ;
+
+// Types
+type
+    : T_INT
+    | T_REAL
+    | T_BOOL
     ;
 
 // Lexer rules
@@ -164,12 +149,11 @@ PLAYER  : 'Player';
 PAYOFFS : 'Payoffs';
 STRATEGYSET: 'StrategySet';
 
+RETURN  : 'return';
 IF      : 'if';
 THEN    : 'then';
 ELSE    : 'else';
-IS      : 'is';
 BREAK   : 'break';
-RETURN  : 'return';
 
 ASSIGN  : '=';
 R_ARROW : '->';
@@ -191,7 +175,7 @@ MUL     : '*';
 DIV     : '/';
 MOD     : 'mod';
 
-BEQUALS : '==';
+EQUALS : '==';
 GREATER : '>';
 LESS    : '<';
 LESSEQ  : '<=';
@@ -202,7 +186,7 @@ OR      : '||';
 XOR     : '^^';
 NOT     : '!';
 
-LITERAL : INT | REAL;
+LITERAL : INT | REAL | BOOL;
 ID      : [a-zA-Z_][a-zA-Z_0-9]*;
 INT     : [0-9]+;
 REAL    : [0-9]+ ('.' [0-9]+)?;
