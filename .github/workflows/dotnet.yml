@@ -20,11 +20,5 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Run ANTLR
-      run: antlr4 -Dlanguage=CSharp -o out Gtl.g4
-    - name: Build
-      run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test
