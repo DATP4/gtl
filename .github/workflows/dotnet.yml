@@ -21,7 +21,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Download dependencies
-      run: dotnet add package Antlr4.Runtime.Standard -Version 4.13.1
+      run: dotnet add package Antlr4.Runtime -Version 4.13.1
     - name: Build
       run: cd .\GameTheoryLanguage\parser; antlr4 -Dlanguage=CSharp -o out Gtl.g4
     - name: Test
