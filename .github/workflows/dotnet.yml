@@ -30,11 +30,10 @@ jobs:
     - name: Install ANTLR4
       run: pip install antlr4-tools
     - name: Install Dependencies
-      run: cd .\GameTheoryLanguage\ &&
-        dotnet add package Antlr4.Runtime.Standard --version 4.13.1
+      run: cd ./GameTheoryLanguage/ && dotnet add package Antlr4.Runtime.Standard --version 4.13.1
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: cd .\GameTheoryLanguage\parser\; antlr4 -Dlanguage=CSharp -o out Gtl.g4
+      run: cd ./GameTheoryLanguage/parser/ && antlr4 -Dlanguage=CSharp -o out Gtl.g4
     - name: Test
       run: dotnet test
