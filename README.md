@@ -25,7 +25,7 @@ The following commands generate the antlr4 files required by the project:
 
 ```
 cd GameTheoryLanguage/parser
-antlr4 -Dlanguage=CSharp Gtl.g4 -o out
+antlr4 -Dlanguage=CSharp -visitor -no-listener -o out Gtl.g4
 ```
 
 Running the project:

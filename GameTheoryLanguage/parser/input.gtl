@@ -1,62 +1,62 @@
 int someVar = 3;
 
-intFunction : (int someVar) -> int {
+// Nonsensical function;
+intFunction : (int aVar) -> int {
     int y = x + 10 * 5;
 
     if (x < 10 * 5) then {
         int z = 10 / 5;
+    } else if(x == 10) then {
+        x MOD 2;
+    } else {
+        int z = 10 * 5;
     }
 
-    return x - 5;
+    x - 5;
 }
 
-intFunction(5);
+intFunction(someVar);
 
 boolFunction : () -> bool {
-    return TRUE;
+    bool a = TRUE;
 }
 
 bool a = boolFunction();
 
-// Declare a history action
-Action history = {
-    if (gamestate().opponent().lastmove() == cooperate) then {
-        return deflect;
-    } else if (gamestate().opponent().lastmove() == deflect) then {
-        return cooperate;
-    } else  {
-        return turn;
-    }
-}
+// Declare actions
+Action oppDeflect = (gamestate.opponent.lastmove == cooperate) then deflect;
+Action oppCooperate = (gamestate.opponent.lastmove == deflect) then cooperate;
+Action turn = (gamestate.turn == 4) then deflect;
 
-Action turn = {
-    if (gamestate().turn() == 4) then {
-        return cooperate;
-    }
-}
+Strategy aStrat1 = [
+    oppDeflect,
+    oppCooperate,
+    turn
+];
 
-Strategy aStrat1 -> cooperate, deflect {
-    history,
-    turn;
-}
+Strategy aStrat2 = [
+    turn
+];
 
-Strategy aStrat2 -> deflect {
-    history;
-}
-
-StrategySet stratset = [
+Strategyspace stratspace = [
     (cooperate, cooperate),
-    (cooperate, deflect),
     (deflect, cooperate),
+    (cooperate, deflect),
     (deflect, deflect)
-]
+];
 
-Payoffs payoff() = {
+Payoffs payoff = [
     p1 -> [1,4,0,2],
     p2 -> [1,0,4,2]
-}
+];
 
-Player aske(aStrat2);
-Player martin(aStrat1);
+Game prisoners = (
+    Players:
+        p1 chooses aStrat1,
+        p2 chooses aStrat2
+    Strategyspace:
+        stratspace
+    Payoffs:
+        payoff
+);
 
-Game prisoners([aske, martin], stratset, payoff());
