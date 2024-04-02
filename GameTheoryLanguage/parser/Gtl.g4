@@ -36,7 +36,7 @@ expr
     | expr '.' ID '(' arg_call ')'      # ChainArgCallExpr
     | expr op=('*' | '/' | MOD) expr    # BinaryExpr
     | expr op=('+' | '-') expr          # BinaryExpr
-    | expr op='=' expr                  # BooleanExpr
+    | expr op='==' expr                  # BooleanExpr
     | expr op='>' expr                  # BooleanExpr
     | expr op='<' expr                  # BooleanExpr
     | expr op='<=' expr                 # BooleanExpr
