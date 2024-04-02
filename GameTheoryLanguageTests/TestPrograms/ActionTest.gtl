@@ -1,0 +1,2 @@
+Action oppCooperate = (gamestate.opponent.lastmove == deflect) then cooperate;
+Action turn = (gamestate.turn == 4) then deflect;
