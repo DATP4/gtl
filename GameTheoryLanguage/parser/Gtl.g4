@@ -2,6 +2,12 @@
 // words starting with capital letter are lexer rules (All
 // caps for readability)
 
+// move_tuple are now just tuples
+// strategy space takes an array and should be verified to contain tuples
+// made boolean literals and changed literal to parser rule
+// reworked game theory
+// removed chain args and added member access instead
+
 grammar Gtl;
 
 // Start of the program
@@ -14,28 +20,29 @@ statement
     : expr SEMICOLON
     | declaration
     | function
-    | return
     | if
     | break
     | game
-    | payoff
+    | payoff ';'
     | player
-    | strategy
-    | strategy_set
+    | strategy ';'
+    | strategy_space ';'
     | action
     ;
 
 // Expressions
 expr
-    : LITERAL                           # LiteralExpr
+    : literal                           # LiteralExpr
     | ID                                # IdExpr
     | array                             # ArrayExpr
+    | tuple                             # TupleExpr
+    | util_function                     # UtilExpr
     | LPAR expr RPAR                    # ParExpr
     | ID LPAR arg_call RPAR             # ArgCallExpr
+    | expr (member_access)+             # MemberExpr
     | expr DOT ID LPAR arg_call RPAR    # ChainArgCallExpr
-    | expr op=(MUL | DIV) expr          # BinaryExpr
+    | expr op=(MUL | DIV | MOD) expr    # BinaryExpr
     | expr op=(PLUS | MINUS) expr       # BinaryExpr
-    | expr op=MOD expr                  # BooleanExpr
     | expr op=EQUALS expr               # BooleanExpr
     | expr op=GREATER expr              # BooleanExpr
     | expr op=LESS expr                 # BooleanExpr
@@ -58,8 +65,13 @@ function
     : ID COLON LPAR arg_def RPAR R_ARROW type LCURL (statement)* RCURL
     ;
 
-return
-    : RETURN expr? SEMICOLON
+// Literals
+literal
+    : INT | REAL | boolean_literal
+    ;
+
+boolean_literal
+    : TRUE | FALSE
     ;
 
 // Control structures
@@ -84,10 +96,6 @@ arg_def
     : ((type ID) (COMMA type ID)*)?
     ;
 
-arg_strategy
-    : ID (COMMA ID)*
-    ;
-
 arg_call
     : (expr (COMMA expr)*)?
     ;
@@ -97,37 +105,50 @@ array
     : LSQUARE expr (COMMA expr)* RSQUARE
     ;
 
-strategy_set_array
-    : LSQUARE move_tuple (COMMA move_tuple)* RSQUARE
+// Member access
+member_access
+    : '.' ID
     ;
 
 // Game theory specific grammar
-move_tuple
-    : LPAR ID (COMMA ID)* RPAR
+tuple
+    : LPAR expr (COMMA expr)+ RPAR
     ;
 
 game
-    : GAME ID LPAR array COMMA ID COMMA expr RPAR SEMICOLON
-    ;
-
-payoff
-    : PAYOFFS ID LPAR RPAR ASSIGN LCURL ID R_ARROW array (COMMA ID R_ARROW array)* RCURL
+    : GAME ID '=' '('
+        PLAYERS ':' player_list
+        STRATEGYSPACE ':' ID
+        PAYOFFS ':' ID
+    ')' ';'
     ;
 
 player
-    : PLAYER ID LPAR ID RPAR SEMICOLON
+    : ID CHOOSES ID
+    ;
+
+player_list
+    : (player) (',' player)*
+    ;
+
+payoff
+    : PAYOFFS ID '=' expr
+    ;
+
+util_function
+    : ID '->' expr
     ;
 
 strategy
-    : STRATEGY ID R_ARROW arg_strategy LCURL ID (COMMA ID)* SEMICOLON RCURL
+    : STRATEGY ID '=' expr
     ;
 
-strategy_set
-    : STRATEGYSET ID ASSIGN strategy_set_array
+strategy_space
+    : STRATEGYSPACE ID '=' expr
     ;
 
 action
-    : ACTION ID ASSIGN LCURL (statement)+ RCURL
+    : ACTION ID '=' '(' expr ')' THEN ID ';'
     ;
 
 // Types
@@ -145,11 +166,10 @@ T_BOOL  : 'bool';
 GAME    : 'Game';
 ACTION  : 'Action';
 STRATEGY: 'Strategy';
-PLAYER  : 'Player';
+PLAYERS : 'Players';
 PAYOFFS : 'Payoffs';
-STRATEGYSET: 'StrategySet';
+STRATEGYSPACE: 'Strategyspace';
 
-RETURN  : 'return';
 IF      : 'if';
 THEN    : 'then';
 ELSE    : 'else';
@@ -157,6 +177,7 @@ BREAK   : 'break';
 
 ASSIGN  : '=';
 R_ARROW : '->';
+CHOOSES : 'chooses';
 
 LPAR    : '(';
 RPAR    : ')';
@@ -173,7 +194,7 @@ PLUS    : '+';
 MINUS   : '-';
 MUL     : '*';
 DIV     : '/';
-MOD     : 'mod';
+MOD     : 'MOD';
 
 EQUALS : '==';
 GREATER : '>';
@@ -186,11 +207,12 @@ OR      : '||';
 XOR     : '^^';
 NOT     : '!';
 
-LITERAL : INT | REAL | BOOL;
-ID      : [a-zA-Z_][a-zA-Z_0-9]*;
+TRUE    : 'TRUE';
+FALSE   : 'FALSE';
+
 INT     : [0-9]+;
 REAL    : [0-9]+ ('.' [0-9]+)?;
-BOOL    : 'TRUE' | 'FALSE';
+ID      : [a-zA-Z_][a-zA-Z_0-9]*;
 
 WS      : [ \t\r\n]+ -> skip;
 COMMENT : '//' ~[\r\n]* -> skip;
