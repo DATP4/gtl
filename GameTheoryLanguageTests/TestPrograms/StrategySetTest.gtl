@@ -1,0 +1,6 @@
+Strategyspace stratspace = [
+    (cooperate, cooperate),
+    (deflect, cooperate),
+    (cooperate, deflect),
+    (deflect, deflect)
+];

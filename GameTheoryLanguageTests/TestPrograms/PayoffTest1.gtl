@@ -1,4 +1,4 @@
-Payoffs payoff() = {
+Payoffs payoff = [
     p1 -> [1,4,0,2],
     p2 -> [1,0,4,2]
-}
+];

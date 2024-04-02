@@ -1,0 +1,4 @@
+Action turn = (gamestate.turn == 4) then deflect;
+Strategy aStrat = [
+    turn
+];
