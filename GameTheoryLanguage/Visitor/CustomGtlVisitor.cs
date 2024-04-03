@@ -1,5 +1,7 @@
 using System.Globalization;
 
+using Antlr4.Runtime.Misc;
+
 public class CustomGtlVisitor : GtlBaseVisitor<object>
 {
     public override object VisitProgram(GtlParser.ProgramContext context)
@@ -22,6 +24,34 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         object value = Visit(context.expr()); // TODO: Typechecking later + handle all sort of expressions
         Console.WriteLine($"Type: {type}, Variable: {variable}, Value: {value}"); // TODO: Add to symbol table
         return base.VisitDeclaration(context);
+    }
+
+    public override object VisitFunction([NotNull] GtlParser.FunctionContext context)
+    {
+        Console.WriteLine("Visiting function");
+
+        Types type_caller = new Types();
+
+        string func_type = context.type().GetText();
+
+        object stmt = null;
+
+        int index = 0;
+
+        foreach (var innerstmt in context.statement())
+        {
+            _ = Visit(context.statement(index));
+            index++;
+        }
+
+        string wtf = context.statement(index - 1).declaration().type().GetText();
+
+        Console.WriteLine("dom: " + func_type);
+        Console.WriteLine("dom2: " + wtf);
+
+        type_caller.CheckFuncType(func_type, wtf);
+
+        return base.VisitFunction(context);
     }
 
     public override object VisitLiteralExpr(GtlParser.LiteralExprContext context)
