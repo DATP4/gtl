@@ -6,6 +6,11 @@ class Types
         {"bool", "bool"}
     };
 
+    public Dictionary<string, string> CreateTable()
+    {
+        Dictionary<string, string> table = new Dictionary<string, string>();
+        return table;
+    }
 
     public void CheckSymbolType(string str)
     {
