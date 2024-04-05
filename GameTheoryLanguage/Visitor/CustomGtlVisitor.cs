@@ -4,37 +4,45 @@ using Antlr4.Runtime.Misc;
 
 public class CustomGtlVisitor : GtlBaseVisitor<object>
 {
-    public override object VisitProgram(GtlParser.ProgramContext context)
+    private Stack<Scope> ScopeStack { get; } = new Stack<Scope>();
+
+    public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
+        EnterScope(new Scope());
         Console.WriteLine("Visiting program");
-        return base.VisitProgram(context);
+        _ = base.VisitProgram(context);
+        ExitScope();
+        return null;
     }
 
-    public override object VisitStatement(GtlParser.StatementContext context)
+    public override object VisitStatement([NotNull] GtlParser.StatementContext context)
     {
         Console.WriteLine("Visiting statement");
         return base.VisitStatement(context);
     }
 
-    public override object VisitDeclaration(GtlParser.DeclarationContext context)
+    public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
         Console.WriteLine("Visiting declaration");
         string type = context.type().GetText(); // TODO: Typechecking later
         string variable = context.ID().GetText();
         object value = Visit(context.expr()); // TODO: Typechecking later + handle all sort of expressions
         Console.WriteLine($"Type: {type}, Variable: {variable}, Value: {value}"); // TODO: Add to symbol table
+        ScopeStack.Peek().AddVariable(variable, type);
         return base.VisitDeclaration(context);
     }
 
     public override object VisitFunction([NotNull] GtlParser.FunctionContext context)
     {
         Console.WriteLine("Visiting function");
+        EnterScope(new Scope());
+        _ = base.VisitFunction(context);
+
 
         Types type_caller = new Types();
 
         string func_type = context.type().GetText();
 
-        object stmt = null;
 
         int index = 0;
 
@@ -51,7 +59,62 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
         type_caller.CheckFuncType(func_type, wtf);
 
-        return base.VisitFunction(context);
+        ExitScope();
+
+        return null;
+    }
+
+    public override object VisitIf(GtlParser.IfContext context)
+    {
+        Console.WriteLine("Visiting if statement");
+        EnterScope(new Scope());
+        foreach (var stmt in context.statement())
+        {
+            _ = base.Visit(stmt);
+        }
+        ExitScope();
+        if (context.elseif() != null)
+        {
+            _ = base.Visit(context.elseif());
+        }
+        else if (context.@else() != null)
+        {
+            _ = base.Visit(context.@else());
+        }
+
+        return null;
+    }
+
+    public override object VisitElseif([NotNull] GtlParser.ElseifContext context)
+    {
+        Console.WriteLine("Visiting elseif statement");
+        EnterScope(new Scope());
+        foreach (var stmt in context.statement())
+        {
+            _ = base.Visit(stmt);
+        }
+        ExitScope();
+        if (context.elseif() != null)
+        {
+            _ = base.Visit(context.elseif());
+        }
+        else if (context.@else() != null)
+        {
+            _ = base.Visit(context.@else());
+        }
+        return null;
+    }
+
+    public override object VisitElse([NotNull] GtlParser.ElseContext context)
+    {
+        Console.WriteLine("Visiting else statement");
+        EnterScope(new Scope());
+        foreach (var stmt in context.statement())
+        {
+            _ = base.Visit(stmt);
+        }
+        ExitScope();
+        return null;
     }
 
     public override object VisitLiteralExpr(GtlParser.LiteralExprContext context)
@@ -138,5 +201,27 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         return result;
     }
 
+    // Methods to support scope handling
+    private void EnterScope(Scope scope) // TODO: Add FTable 
+    {
+        if (ScopeStack.Count() != 0) // Ensuring that the stack isn't empty as getCurrentScope() would return an error
+        {
+            foreach (var variable in GetCurrentScope().Variables) // Copying the variables from the parent scope to the child scope
+            {
+                scope.AddVariable(variable.Key, variable.Value);
+            }
+        }
 
+        ScopeStack.Push(scope);
+    }
+
+    private void ExitScope()
+    {
+        _ = ScopeStack.Pop();
+    }
+
+    private Scope GetCurrentScope()
+    {
+        return ScopeStack.Peek();
+    }
 }
