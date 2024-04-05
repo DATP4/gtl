@@ -1,62 +1,10 @@
-int someVar = 3;
 
-// Nonsensical function;
 intFunction : (int aVar) -> int {
-    int y = x + 10 * 5;
-
-    if (x < 10 * 5) then {
-        int z = 10 / 5;
-    } else if(x == 10) then {
-        x MOD 2;
+    aVar + 5;
+    if(TRUE) then {
+        int x = 2;
     } else {
-        int z = 10 * 5;
+        int h = aVar;
     }
-
-    x - 5;
 }
-
-intFunction(someVar);
-
-boolFunction : () -> bool {
-    bool a = TRUE;
-}
-
-bool a = boolFunction();
-
-// Declare actions
-Action oppDeflect = (gamestate.opponent.lastmove == cooperate) then deflect;
-Action oppCooperate = (gamestate.opponent.lastmove == deflect) then cooperate;
-Action turn = (gamestate.turn == 4) then deflect;
-
-Strategy aStrat1 = [
-    oppDeflect,
-    oppCooperate,
-    turn
-];
-
-Strategy aStrat2 = [
-    turn
-];
-
-Strategyspace stratspace = [
-    (cooperate, cooperate),
-    (deflect, cooperate),
-    (cooperate, deflect),
-    (deflect, deflect)
-];
-
-Payoffs payoff = [
-    p1 -> [1,4,0,2],
-    p2 -> [1,0,4,2]
-];
-
-Game prisoners = (
-    Players:
-        p1 chooses aStrat1,
-        p2 chooses aStrat2
-    Strategyspace:
-        stratspace
-    Payoffs:
-        payoff
-);
-
+int x = intFunction(2);

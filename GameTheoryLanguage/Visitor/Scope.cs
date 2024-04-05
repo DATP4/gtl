@@ -5,5 +5,13 @@ public class Scope
     {
         Variables[name] = value;
     }
+    public bool Contains(string key)
+    {
+        return Variables.ContainsKey(key);
+    }
+    public string Find(string key)
+    {
+        return Variables[key];
+    }
 
 }
