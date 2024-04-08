@@ -280,14 +280,15 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             stringArray = stringArray.Append(Visit(exprcontext).ToString()).ToArray()!;
         }
         string[][] functionTypes = Ftable.Find(functionId);
-        if (stringArray.Length == functionTypes[0].Length)
+        if (stringArray.Length != functionTypes[0].Length)
         {
-            for (int i = 0; i < stringArray.Length; i++)
+            throw new NotSupportedException("Not the correct amount of input parameters in function");
+        }
+        for (int i = 0; i < stringArray.Length; i++)
+        {
+            if (!stringArray[i].Equals(functionTypes[0][i]))
             {
-                if (!stringArray[i].Equals(functionTypes[0][i]))
-                {
-                    throw new NotSupportedException($"expected type {functionTypes[0][i]} in function call but recieved {stringArray[i]}");
-                }
+                throw new NotSupportedException($"expected type {functionTypes[0][i]} in function call but recieved {stringArray[i]}");
             }
         }
         return Ftable.Find(functionId)[1][0];
