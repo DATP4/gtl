@@ -1,0 +1,58 @@
+{
+  description = "Game Theory Language";
+  inputs = {
+    nixpkgs.url ="github:NixOS/nixpkgs/nixos-23.11";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    ...
+  }:
+  flake-utils.lib.eachDefaultSystem (
+    system: let
+      pkgs = import nixpkgs { inherit system;};
+      projectFile = "./GameTheoryLanguage/GameTheoryLanguage.csproj";
+      testProjectFile = "./GameTheoryLanguageTests/GameTheoryLanguageTests.csproj";
+      pname = "game-theory-language";
+      dotnet-sdk = pkgs.dotnet-sdk_8;
+      dotnet-runtime = pkgs.dotnetCorePackages.runtime_8_0;
+      version = "0.0.1";
+    in {
+      packages = {
+        fetchDeps = let
+          flags = [];
+          runtimeIds = map (system: pkgs.dotnetCorePackages.systemToDotnetRid system) dotnet-sdk.meta.platforms;
+        in
+          pkgs.writeShellScriptBin "fetch-${pname}-deps" (builtins.readFile (pkgs.substituteAll {
+            src = ./nix/fetchDeps.sh;
+            pname = pname;
+            binPath = pkgs.lib.makeBinPath [pkgs.coreutils dotnet-sdk (pkgs.nuget-to-nix.override {inherit dotnet-sdk;})];
+            projectFiles = toString (pkgs.lib.toList projectFile);
+            testProjectFiles = toString (pkgs.lib.toList testProjectFile);
+            rids = pkgs.lib.concatStringsSep "\" \"" runtimeIds;
+            packages = dotnet-sdk.packages;
+            storeSrc = pkgs.srcOnly {
+              src = ./.;
+              pname = pname;
+              version = version;
+            };
+        }));
+        default = pkgs.buildDotnetModule {
+          inherit version dotnet-sdk dotnet-runtime;
+          projectFile = "./gtl.sln";
+          pname = "GameTheoryLanguage";
+          src = ./.;
+          doCheck = true;
+          nugetDeps = ./nix/deps.nix;
+          nativeBuildInputs = with pkgs; [
+            antlr4
+          ];
+        };
+      };
+      devShells.default = import ./nix/shell.nix { inherit pkgs; };
+    }
+  );
+}
