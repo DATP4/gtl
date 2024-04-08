@@ -10,6 +10,6 @@ ANTLR_COMMAND=$(command -v antlr4 || command -v antlr)
 
 pushd "$SCRIPT_DIR"
 
-"$ANTLR_COMMAND" -Dlanguage=CSharp "Gtl.g4" -o "out" -visitor -no-listener
+"$ANTLR_COMMAND" -Dlanguage=CSharp "Gtl.g4" -o "../GameTheoryLanguage/out" -visitor -no-listener
 
 popd
