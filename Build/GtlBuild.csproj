@@ -14,7 +14,7 @@
         <GeneratedParserFiles Include="$(MSBuildProjectDirectory)/out/*.*"/>
     </ItemGroup>
 
-    <Target Name="generateParser" BeforeTargets="BeforeBuild" Inputs="$(MSBuildProjectDirectory)/Sct.g4" Outputs="$(MSBuildProjectDirectory)/out/" Condition=" '$(OS)' != 'Windows_NT' ">
+    <Target Name="generateParser" BeforeTargets="BeforeBuild" Inputs="$(MSBuildProjectDirectory)/Gtl.g4" Outputs="$(MSBuildProjectDirectory)/out/GtlParser.cs" Condition=" '$(OS)' != 'Windows_NT' ">
         <Message Text="Running generate parser" Importance="high"/>
         <Exec Command="bash $(MSBuildProjectDirectory)/generateParser.sh" ConsoleToMSBuild="true">
             <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />

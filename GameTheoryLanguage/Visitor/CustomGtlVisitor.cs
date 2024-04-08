@@ -53,6 +53,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         Ftable.Add(functionId, functionTypes);
         EnterScope(new Scope());
 
+        _ = Visit(context.arg_def());
+
         Scope funcVTable = new Scope();
 
         string func_type = context.type().GetText();
@@ -122,7 +124,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
         }
 
-        var _ = base.VisitFunction(context);
         ExitScope();
 
         return null!;
