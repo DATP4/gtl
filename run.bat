@@ -1,3 +1,2 @@
 @echo off
-cd .\GameTheoryLanguage
-dotnet run
+dotnet run --project .\GameTheoryLanguage

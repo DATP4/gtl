@@ -2,6 +2,7 @@ int someVar = 3;
 
 // Nonsensical function;
 intFunction : (int aVar) -> int {
+    int x = 5;
     int y = x + 10 * 5;
 
     if (x < 10 * 5) then {
