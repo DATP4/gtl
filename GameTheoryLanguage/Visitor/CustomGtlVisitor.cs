@@ -8,7 +8,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
+        Objecttable.Clear();
+        ClearFtable();
+        Objecttable.Add("gamestate", [["opponent", "turn"], ["object", "int"]]);
+        Objecttable.Add("opponent", [["lastmove"], ["move"]]);
         EnterScope(new Scope());
+        ScopeStack.Peek().AddVariable("gamestate", "object");
         Console.WriteLine("Visiting program");
         _ = base.VisitProgram(context);
         ExitScope();
@@ -30,7 +35,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string valueType = (string)Visit(context.expr());
         if (!type.Equals(valueType))
         {
-            throw new NotSupportedException($"Declaration expected type {type} but recieved " + valueType);
+            throw new DeclarationException($"Declaration expected type {type} but received " + valueType);
         }
         ScopeStack.Peek().AddVariable(variable, type);
         return null!;
@@ -206,7 +211,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "bool";
         }
-        throw new NotSupportedException($"literal expression expected type but recieved " + val);
+        throw new NotSupportedException($"literal expression expected type but received " + val);
     }
     public override object VisitBinaryExpr(GtlParser.BinaryExprContext context)
     {
@@ -221,7 +226,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "real";
         }
-        throw new NotSupportedException($"binary expression expected type {left} but recieved type " + right);
+        throw new BinaryExpressionException($"binary expression expected type {left} but received type " + right);
     }
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
@@ -244,7 +249,11 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "bool";
         }
-        throw new NotSupportedException($"boolean expression expected type {left} but recieved type " + right);
+        if (left.Equals("move") && right.Equals("move") && op == "==")
+        {
+            return "bool";
+        }
+        throw new BooleanExpressionException($"boolean expression expected type {left} but received type " + right);
     }
     public override object VisitLogicalNotExpr(GtlParser.LogicalNotExprContext context)
     {
@@ -254,18 +263,85 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "bool";
         }
-        throw new NotSupportedException("Logical not expression expected type bool but recieved type " + expr);
+        throw new BooleanExpressionException("Logical not expression expected type bool but received type " + expr);
     }
-    /*
-        public override object VisitChainArgCallExpr(GtlParser.ChainArgCallExprContext context)
+    public override object VisitChainArgCallExpr(GtlParser.ChainArgCallExprContext context)
+    {
+        //Check each call against ftable and return the return type of last call
+        Console.WriteLine("Visting chainargcall expression");
+        return base.VisitChainArgCallExpr(context);
+    }
+    public override object VisitMemberExpr(GtlParser.MemberExprContext context)
+    {
+        Console.WriteLine("Visting member expression");
+        string id = context.expr().GetText();
+        string type = (string)VisitId(id);
+        if (!type.Equals("object"))
         {
-            Check each call against ftable and return the return type of last call
+            throw new WrongTypeException($"expected type object from {id} but received {type}");
         }
-        public override object VisitMemberExpr(GtlParser.MemberExprContext context)
+        if (!Objecttable.Contains(id))
         {
-            return type of member from vtable?
+            throw new MemberAccessException("Object not found");
         }
-        */
+        GtlParser.Member_accessContext[] membercontexts = context.member_access();
+        if (membercontexts.Length > 1)
+        {
+            string nextid = membercontexts[0].ID().GetText();
+            string[][] objarray = Objecttable.Find(id);
+            int k = -1;
+            for (int i = 0; i < objarray[0].Length; i++)
+            {
+                if (objarray[0][i].Equals(nextid))
+                {
+                    k = i;
+                }
+            }
+            if (k == -1)
+            {
+                throw new MemberAccessException($"couldnt find entry {nextid} in objecttable");
+            }
+            if (!objarray[1][k].Equals("object"))
+            {
+                throw new WrongTypeException($"Expected type object from member {objarray[0][k]} but received {objarray[1][k]}");
+            }
+        }
+        for (int i = 0; i < membercontexts.Length - 2; i++)
+        {
+            string memberid = membercontexts[i].ID().GetText();
+            if (!Objecttable.Contains(memberid))
+            {
+                throw new MemberAccessException("not found in object table");
+            }
+        }
+        string[][] objectarray;
+        if (membercontexts.Length == 1)
+        {
+            objectarray = Objecttable.Find(id);
+        }
+        else
+        {
+            objectarray = Objecttable.Find(membercontexts[membercontexts.Length - 2].ID().GetText());
+        }
+        int j = -1;
+        for (int i = 0; i < objectarray[0].Length; i++)
+        {
+            if (objectarray[0][i].Equals(membercontexts[membercontexts.Length - 1].ID().GetText()))
+            {
+                j = i;
+            }
+        }
+        if (j == -1)
+        {
+            throw new MemberAccessException($"couldnt find entry {membercontexts[membercontexts.Length - 1].ID().GetText()} in objecttable");
+        }
+        return objectarray[1][j];
+    }
+    public override object VisitMember_access([NotNull] GtlParser.Member_accessContext context)
+    {
+        Console.WriteLine("Visiting member access");
+        return base.VisitMember_access(context);
+    }
 
     public override object VisitArgCallExpr(GtlParser.ArgCallExprContext context)
     {
@@ -273,7 +349,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string functionId = context.ID().GetText();
         if (!Ftable.Contains(functionId))
         {
-            throw new NotSupportedException("Function not found in Function table");
+            throw new FunctionCallException("Function not found in Function table");
         }
         string[] stringArray = [];
         foreach (GtlParser.ExprContext exprcontext in context.arg_call().expr())
@@ -283,45 +359,42 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string[][] functionTypes = Ftable.Find(functionId);
         if (stringArray.Length != functionTypes[0].Length)
         {
-            throw new NotSupportedException("Not the correct amount of input parameters in function");
+            throw new FunctionCallException("Not the correct amount of input parameters in function");
         }
         for (int i = 0; i < stringArray.Length; i++)
         {
             if (!stringArray[i].Equals(functionTypes[0][i]))
             {
-                throw new NotSupportedException($"expected type {functionTypes[0][i]} in function call but recieved {stringArray[i]}");
+                throw new FunctionCallException($"expected type {functionTypes[0][i]} in function call but received {stringArray[i]}");
             }
         }
         return Ftable.Find(functionId)[1][0];
     }
-    /*
     public override object VisitParExpr(GtlParser.ParExprContext context)
     {
-        visit expression and return its returntype
+        Console.WriteLine("Visting Parentheses expression");
+        return (string)Visit(context.expr());
     }
+    /*
     public override object VisitUtilExpr(GtlParser.UtilExprContext context)
     {
         ??????
     }
+    */
     public override object VisitTupleExpr(GtlParser.TupleExprContext context)
     {
-        ?????
+        Console.WriteLine("visiting tuple expression");
+        return (string)Visit(context.tuple());
     }
     public override object VisitArrayExpr(GtlParser.ArrayExprContext context)
     {
-        ?????
+        Console.WriteLine("visiting array expression");
+        return (string)Visit(context.array());
     }
-    */
     public override object VisitIdExpr(GtlParser.IdExprContext context)
     {
-        Console.WriteLine("Visiting ID expression");
         string id = context.ID().GetText();
-        if (ScopeStack.Peek().Contains(id))
-        {
-            return ScopeStack.Peek().Find(id);
-        }
-        throw new NotSupportedException("Variable " + id + " not found");
-
+        return VisitId(id);
     }
     public override object VisitArg_call([NotNull] GtlParser.Arg_callContext context)
     {
@@ -347,6 +420,126 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             ScopeStack.Peek().AddVariable(id, type);
         }
         return base.VisitArg_def(context);
+    }
+    public override object VisitPlayer([NotNull] GtlParser.PlayerContext context)
+    {
+        Console.WriteLine("Visiting player");
+        string id = context.ID(0).GetText();
+        string type = (string)VisitId(context.ID(1).GetText());
+        if (!type.Equals("strategy"))
+        {
+            throw new DeclarationException("Expected type strategy but received " + type);
+        }
+        ScopeStack.Peek().AddVariable(id, "player");
+        return "player";
+    }
+    public override object VisitPlayer_list([NotNull] GtlParser.Player_listContext context)
+    {
+        Console.WriteLine("visiting playerlist");
+        foreach (GtlParser.PlayerContext playercontext in context.player())
+        {
+            string type = (string)Visit(playercontext);
+            if (!type.Equals("player"))
+            {
+                throw new WrongTypeException("expected type player but received " + type);
+            }
+        }
+        return "playerlist";
+    }
+    public override object VisitStrategy([NotNull] GtlParser.StrategyContext context)
+    {
+        Console.WriteLine("Visiting strategy");
+        string type = "actionarray";
+        string valuetype = (string)Visit(context.expr());
+        if (!type.Equals(valuetype))
+        {
+            throw new WrongTypeException("expected type actionarray but received " + valuetype);
+        }
+        string id = context.ID().GetText();
+        ScopeStack.Peek().AddVariable(id, "strategy");
+        return null!;
+    }
+    public override object VisitStrategy_space([NotNull] GtlParser.Strategy_spaceContext context)
+    {
+        Console.WriteLine("Visiting strategyspace");
+        string type = "tuplearray";
+        string valuetype = (string)Visit(context.expr());
+        if (!type.Equals(valuetype))
+        {
+            throw new WrongTypeException("expected type tuplearray but received " + valuetype);
+        }
+        string id = context.ID().GetText();
+        ScopeStack.Peek().AddVariable(id, "strategyspace");
+        return null!;
+    }
+    public override object VisitAction([NotNull] GtlParser.ActionContext context)
+    {
+        Console.WriteLine("Visiting action");
+        string condtype = (string)Visit(context.expr());
+        if (!condtype.Equals("bool"))
+        {
+            throw new WrongTypeException("Expected bool but received " + condtype);
+        }
+        /*
+        string valuetype = (string)VisitId(context.ID(1).GetText());
+        if (!valuetype.Equals("move"))
+        {
+            throw new WrongTypeException("Expected move but received " + valuetype);
+        }
+        */
+        string id = context.ID(0).GetText();
+        ScopeStack.Peek().AddVariable(id, "action");
+        return null!;
+    }
+    public override object VisitArray([NotNull] GtlParser.ArrayContext context)
+    {
+        Console.WriteLine("Visiting array");
+        string arraytype = (string)Visit(context.expr(0));
+        foreach (GtlParser.ExprContext exprcontext in context.expr())
+        {
+            string valuetype = (string)Visit(exprcontext);
+            if (!arraytype.Equals(valuetype))
+            {
+                throw new WrongTypeException("expected type " + arraytype + " but received " + valuetype);
+            }
+        }
+        return arraytype + "array";
+    }
+    public override object VisitTuple([NotNull] GtlParser.TupleContext context)
+    {
+        Console.WriteLine("Visiting tuple");
+        return "tuple";
+    }
+    private object VisitId(string id)
+    {
+        Console.WriteLine("Visiting ID expression");
+        if (ScopeStack.Peek().Contains(id))
+        {
+            return ScopeStack.Peek().Find(id);
+        }
+        throw new VariableNotFoundException("Variable " + id + " not found");
+    }
+    public override object VisitGame([NotNull] GtlParser.GameContext context)
+    {
+        string playerlisttype = (string)Visit(context.player_list());
+        // TODO: maybe remove checking playerlist type as that would have already thrown an exception when checking players
+        if (!playerlisttype.Equals("playerlist"))
+        {
+            throw new WrongTypeException("expected type playerlist but received " + playerlisttype);
+        }
+        string strategyspacetype = (string)VisitId(context.ID(1).GetText());
+        if (!strategyspacetype.Equals("strategyspace"))
+        {
+            throw new WrongTypeException("expected type strategyspace but received " + strategyspacetype);
+        }
+        /*
+        string payofftype = (string)VisitId(context.ID(2).GetText());
+        if (!payofftype.Equals("payoff"))
+        {
+            throw new WrongTypeException("expected type payoff but received " + payofftype);
+        }
+        */
+        return null!;
     }
     // Methods to support scope handling
     private void EnterScope(Scope scope) // TODO: Add FTable
