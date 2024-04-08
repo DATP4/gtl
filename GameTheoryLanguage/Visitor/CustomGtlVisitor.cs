@@ -1,7 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
 
 using Antlr4.Runtime.Misc;
+
 public class CustomGtlVisitor : GtlBaseVisitor<object>
 {
     private Stack<Scope> ScopeStack { get; } = new Stack<Scope>();
@@ -12,14 +12,14 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         Console.WriteLine("Visiting program");
         _ = base.VisitProgram(context);
         ExitScope();
-        return null;
+        return null!;
     }
 
     public override object VisitStatement([NotNull] GtlParser.StatementContext context)
     {
         Console.WriteLine("Visiting statement");
         _ = base.VisitStatement(context);
-        return null;
+        return null!;
     }
 
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
@@ -27,21 +27,21 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         Console.WriteLine("Visiting declaration");
         string type = context.type().GetText();
         string variable = context.ID().GetText();
-        string valueType = Visit(context.expr()).ToString();
+        string valueType = (string)Visit(context.expr());
         if (!type.Equals(valueType))
         {
             throw new NotSupportedException($"Declaration expected type {type} but recieved " + valueType);
         }
         ScopeStack.Peek().AddVariable(variable, type);
-        return null;
+        return null!;
     }
 
     public override object VisitFunction([NotNull] GtlParser.FunctionContext context)
     {
         //check ftable, if it exists check input type against expected type and return functions return type, else add to ftable
         Console.WriteLine("Visiting function");
-        
-        /* Mads og mikkels ting
+
+
         string functionId = context.ID().GetText();
         GtlParser.TypeContext[] typeContext = context.arg_def().type();
         string[] stringArray = [];
@@ -52,20 +52,24 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string[][] functionTypes = [stringArray, [context.type().GetText()]];
         Ftable.Add(functionId, functionTypes);
         EnterScope(new Scope());
-        */
 
-        string func_name = context.ID().GetText();
-        Scope funcTables = GlobalScope.CreateFunScope(func_name);
+        Scope funcVTable = new Scope();
 
         string func_type = context.type().GetText();
-        funcTables.AddFTableType(func_type, func_name);
 
         foreach (var stmt in context.statement())
         {
+            if (stmt.expr() != null)
+            {
+                funcVTable.Variables.Clear();
+                string type = (string)Visit(stmt.expr());
+                funcVTable.AddVariable(type, "expr");
+            }
             if (stmt.declaration() != null)
             {
-                funcTables.ClearVTable();
-                funcTables.AddVTableType(stmt.declaration().type().GetText(), stmt.declaration().ID().GetText());
+                ScopeStack.Peek().AddVariable(stmt.declaration().ID().GetText(), stmt.declaration().type().GetText());
+                funcVTable.Variables.Clear();
+                funcVTable.AddVariable(stmt.declaration().type().GetText(), stmt.declaration().ID().GetText());
                 continue;
             }
             if (stmt.@if() != null)
@@ -73,25 +77,25 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                 string type = "";
                 if (stmt.@if().@else() != null)
                 {
-                    funcTables.ClearVTable();
+                    funcVTable.Variables.Clear();
                     foreach (var elsestmt in stmt.@if().@else().statement())
                     {
                         type = GetTypeFromStatement(elsestmt);
                     }
-                    funcTables.AddVTableType(type, "else");
+                    funcVTable.AddVariable(type, "else");
                 }
                 if (stmt.@if().@elseif() != null)
                 {
                     if (CheckElseInElseIf(stmt.@if().@elseif()))
                     {
-                        funcTables.ClearVTable();
+                        funcVTable.Variables.Clear();
                     }
                     string iftype = "";
                     foreach (var ifstmt in stmt.@if().statement())
                     {
                         iftype = GetTypeFromStatement(ifstmt);
                     }
-                    funcTables.AddVTableType(GetTypeFromElseIf(stmt.@if().elseif(), iftype), "elseif");
+                    funcVTable.AddVariable(GetTypeFromElseIf(stmt.@if().elseif(), iftype), "elseif");
 
                 }
 
@@ -100,38 +104,28 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                     type = GetTypeFromStatement(ifstmt);
                 }
 
-                funcTables.AddVTableType(type, "if");
+                funcVTable.AddVariable(type, "if");
             }
 
         }
 
-        Dictionary<string, List<string>> dic = funcTables.GetVtable();
 
-
-        foreach (var e in dic)
+        foreach (var e in funcVTable.Variables)
         {
             if (e.Key == func_type)
             {
-                List<string> noget = e.Value;
-                if (!noget.Any())
-                {
-                    continue;
-                }
+                continue;
             }
             else
             {
-                List<string> noget = e.Value;
-                if (noget.Any())
-                {
-                    throw new FieldAccessException("Non return values has been saved and thats a no no");
-                }
+                throw new FieldAccessException("Non return values has been saved and thats a no no");
             }
         }
-      
+
         var _ = base.VisitFunction(context);
         ExitScope();
 
-        return null;
+        return null!;
     }
 
     public override object VisitIf(GtlParser.IfContext context)
@@ -152,7 +146,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             _ = base.Visit(context.@else());
         }
 
-        return null;
+        return null!;
     }
 
     public override object VisitElseif([NotNull] GtlParser.ElseifContext context)
@@ -172,7 +166,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             _ = base.Visit(context.@else());
         }
-        return null;
+        return null!;
     }
 
 
@@ -185,7 +179,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             _ = base.Visit(stmt);
         }
         ExitScope();
-        return null;
+        return null!;
     }
 
     /*
@@ -216,8 +210,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitBinaryExpr(GtlParser.BinaryExprContext context)
     {
         Console.WriteLine("Visiting binary expr");
-        object left = Visit(context.expr(0)).ToString();
-        object right = Visit(context.expr(1)).ToString();
+        object left = (string)Visit(context.expr(0));
+        object right = (string)Visit(context.expr(1));
         if (left.Equals("int") && right.Equals("int"))
         {
             return "int";
@@ -231,8 +225,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
         Console.WriteLine("Visiting boolean expr");
-        string left = Visit(context.expr(0)).ToString();
-        string right = Visit(context.expr(1)).ToString();
+        string left = (string)Visit(context.expr(0));
+        string right = (string)Visit(context.expr(1));
         string op = context.op.Text;
         if (left.Equals("bool") && right.Equals("bool") &&
         (op == "==" || op == "!=" || op == "&&" || op == "||" || op == "^^"))
@@ -254,7 +248,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitLogicalNotExpr(GtlParser.LogicalNotExprContext context)
     {
         Console.WriteLine("Visiting logical not expr");
-        string expr = Visit(context.expr()).ToString();
+        string expr = (string)Visit(context.expr());
         if (expr.Equals("bool"))
         {
             return "bool";
@@ -283,7 +277,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string[] stringArray = [];
         foreach (GtlParser.ExprContext exprcontext in context.arg_call().expr())
         {
-            stringArray = stringArray.Append(Visit(exprcontext).ToString()).ToArray();
+            stringArray = stringArray.Append(Visit(exprcontext).ToString()).ToArray()!;
         }
         string[][] functionTypes = Ftable.Find(functionId);
         if (stringArray.Length == functionTypes[0].Length)
@@ -376,12 +370,16 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     {
         return ScopeStack.Peek();
     }
-    }
 
     public string GetTypeFromStatement(GtlParser.StatementContext ctx)
     {
         string type = "";
 
+        if (ctx.expr() != null)
+        {
+            type = (string)Visit(ctx.expr());
+            return type;
+        }
         if (ctx.declaration() != null)
         {
             return ctx.declaration().type().GetText();
@@ -429,7 +427,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
             if (type != tp)
             {
-                throw new NotSupportedException("Fuck up in gettypefromelseif else");
+                throw new NotSupportedException("Type in elseif doesn't match expected return type of function");
             }
             return GetTypeFromElseIf(ctx.elseif(), tp);
         }
@@ -441,7 +439,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
             if (type != tp)
             {
-                throw new NotSupportedException("Fuck up in gettypefromelseif else");
+                throw new NotSupportedException("Type in else doesn't match expected return type of function");
             }
             return type;
         }
@@ -453,13 +451,13 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
             if (type != tp)
             {
-                throw new NotSupportedException("Fuck up in gettypefromelseif stmt");
+                throw new NotSupportedException("Type in elseif statement doesn't match return type of function");
             }
             return type;
         }
         else
         {
-            throw new NotSupportedException("Fuck up in your elseif stmt");
+            throw new NotSupportedException("Error in else if statement");
         }
     }
 
