@@ -348,7 +348,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         return base.VisitArg_def(context);
     }
     // Methods to support scope handling
-    private void EnterScope(Scope scope) // TODO: Add FTable 
+    private void EnterScope(Scope scope) // TODO: Add FTable
     {
         if (ScopeStack.Count() != 0) // Ensuring that the stack isn't empty as getCurrentScope() would return an error
         {
