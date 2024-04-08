@@ -34,7 +34,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: run antlr
-      run: cd .\Build && antlr4 -Dlanguage=CSharp -visitor -no-listener -o out Gtl.g4
+      run: cd ./Build && antlr4 -Dlanguage=CSharp -visitor -no-listener -o out Gtl.g4
     - name: Build
       run: dotnet build --no-restore
     - name: Test
