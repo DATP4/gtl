@@ -6,10 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <BuildDependsOn>
+        generateParser;
+        $(BuildDependsOn)
+    </BuildDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Build/GtlBuild.csproj" />
   </ItemGroup>
 
 </Project>
