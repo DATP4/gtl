@@ -481,5 +481,9 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             return check;
         }
     }
+
+    public void ClearFtable(){ //Used in testing as Ftable is static dictionary, and there for when testing the same function it says the key is already in the Dictionary.
+        Ftable.Table.Clear();
+    }
 }
 
