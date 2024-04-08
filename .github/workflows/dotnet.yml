@@ -33,6 +33,8 @@ jobs:
       run: cd ./GameTheoryLanguage/ && dotnet add package Antlr4.Runtime.Standard --version 4.13.1
     - name: Restore dependencies
       run: dotnet restore
+    - name: run antlr
+      run: cd .\Build && antlr4 -Dlanguage=CSharp -visitor -no-listener -o out Gtl.g4
     - name: Build
       run: dotnet build --no-restore
     - name: Test
