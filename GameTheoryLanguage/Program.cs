@@ -3,7 +3,7 @@
 static void MyParseMethod()
 {
     // Read input from a file
-    string filePath = "parser/input.gtl"; // Update the file path accordingly
+    string filePath = "Build/input.gtl"; // Update the file path accordingly
     string input = File.ReadAllText(filePath);
 
     // Create a stream from the input string
@@ -12,7 +12,7 @@ static void MyParseMethod()
     // Create a lexer
     GtlLexer lexer = new GtlLexer(stream);
 
-    // Create a token stream    
+    // Create a token stream
     CommonTokenStream tokens = new CommonTokenStream(lexer);
 
     // Create a parser

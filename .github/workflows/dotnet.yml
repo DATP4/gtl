@@ -34,6 +34,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: cd ./GameTheoryLanguage/parser/ && antlr4 -Dlanguage=CSharp -visitor -no-listener -o out Gtl.g4
+      run: dotnet build --no-restore
     - name: Test
       run: dotnet test
