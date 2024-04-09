@@ -12,28 +12,20 @@ program
 // Statements
 statement
     : expr ';'
-    | declaration
+    | declaration ';'
     | function
-    | if
-    | game
-    | payoff ';'
-    | player
-    | strategy ';'
-    | strategy_space ';'
-    | action
+    | game_variable_declaration ';'
+    | game_functions ';'
     ;
 
 // Expressions
 expr
-    : literal                           # LiteralExpr
+    : '(' expr ')'                      # ParExpr
+    | literal                           # LiteralExpr
     | ID                                # IdExpr
-    | array                             # ArrayExpr
-    | tuple                             # TupleExpr
-    | util_function                     # UtilExpr
-    | '(' expr ')'                      # ParExpr
     | ID '(' arg_call ')'               # ArgCallExpr
-    | expr (member_access)+             # MemberExpr
-    | expr '.' ID '(' arg_call ')'      # ChainArgCallExpr
+    | ID (member_access)+               # MemberExpr
+    | ifElse                            # IfElseExpr
     | expr op=('*' | '/' | MOD) expr    # BinaryExpr
     | expr op=('+' | '-') expr          # BinaryExpr
     | expr op='==' expr                 # BooleanExpr
@@ -46,11 +38,12 @@ expr
     | expr op='||' expr                 # BooleanExpr
     | expr op='^^' expr                 # BooleanExpr
     | '!' expr                          # LogicalNotExpr
+    | '-' expr                          # UnaryExpr
     ;
 
 // Declarations
 declaration
-    : type ID '=' expr ';'
+    : type ID '=' expr
     ;
 
 // Functions
@@ -68,12 +61,12 @@ boolean_literal
     ;
 
 // Control structures
-if
-    : IF '(' expr ')' THEN '{' (statement)* '}' (elseif | else)?
+ifElse
+    : IF '(' expr ')' THEN '{' (statement)+ '}' elseif* else
     ;
 
 elseif
-    : ELSE IF '(' expr ')' THEN '{' (statement)* '}' (elseif | else)?
+    : ELSE IF '(' expr ')' THEN '{' (statement)+ '}'
     ;
 
 else
@@ -89,55 +82,55 @@ arg_call
     : (expr (',' expr)*)?
     ;
 
-// Arrays
 array
-    : '[' expr (',' expr)* ']'
+    : '[' array_type (',' array_type)* ']'
     ;
 
-// Member access
+array_type
+    : expr
+    | player
+    | game_utility_function
+    | tuple
+    ;
+
+tuple
+    : '(' ID (',' ID)* ')'
+    ;
+
 member_access
     : '.' ID
     ;
 
 // Game theory specific grammar
-tuple
-    : '(' expr (',' expr)+ ')'
+
+game_variable_declaration
+    : game_type ID '=' game_expr
     ;
 
-game
-    : GAME ID '=' '('
-        PLAYERS ':' player_list
-        STRATEGYSPACE ':' ID
-        PAYOFFS ':' ID
-    ')' ';'
+game_expr
+    : array
+    | (expr) THEN move
+    | game_tuple
+    ;
+
+game_utility_function
+    : ID '->' array
+    ;
+
+game_tuple
+    : '(' ID ',' ID ',' ID ')'
     ;
 
 player
     : ID CHOOSES ID
     ;
 
-player_list
-    : (player) (',' player)*
+move
+    : ID
     ;
 
-payoff
-    : PAYOFFS ID '=' expr
-    ;
-
-util_function
-    : ID '->' expr
-    ;
-
-strategy
-    : STRATEGY ID '=' expr
-    ;
-
-strategy_space
-    : STRATEGYSPACE ID '=' expr
-    ;
-
-action
-    : ACTION ID '=' '(' expr ')' THEN ID ';'
+game_functions
+    : ID '.' RUN '(' INT ')'
     ;
 
 // Types
@@ -147,22 +140,35 @@ type
     | T_BOOL
     ;
 
+game_type
+    : T_GAME
+    | T_PLAYERS
+    | T_MOVES
+    | T_PAYOFF
+    | T_STRATEGY
+    | T_STRATEGYSPACE
+    | T_ACTION
+    ;
+
 // Lexer rules
 T_INT   : 'int';
 T_REAL  : 'real';
 T_BOOL  : 'bool';
 
-GAME    : 'Game';
-ACTION  : 'Action';
-STRATEGY: 'Strategy';
-PLAYERS : 'Players';
-PAYOFFS : 'Payoffs';
-STRATEGYSPACE: 'Strategyspace';
+T_GAME    : 'Game';
+T_MOVES   : 'Moves';
+T_ACTION  : 'Action';
+T_STRATEGY: 'Strategy';
+T_PLAYERS : 'Players';
+T_PAYOFF  : 'Payoff';
+T_STRATEGYSPACE: 'Strategyspace';
+RUN     : 'run';
 
 IF      : 'if';
 THEN    : 'then';
 ELSE    : 'else';
 
+LET     : 'let';
 ASSIGN  : '=';
 R_ARROW : '->';
 CHOOSES : 'chooses';
@@ -199,7 +205,7 @@ TRUE    : 'TRUE';
 FALSE   : 'FALSE';
 
 INT     : [0-9]+;
-REAL    : [0-9]+ ('.' [0-9]+)?;
+REAL    : [0-9]+ '.' [0-9]+;
 ID      : [a-zA-Z_][a-zA-Z_0-9]*;
 
 WS      : [ \t\r\n]+ -> skip;
