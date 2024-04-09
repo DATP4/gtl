@@ -5,12 +5,12 @@ name: .NET
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  build:
+  dotnet-test:
 
     runs-on: ubuntu-latest
 
