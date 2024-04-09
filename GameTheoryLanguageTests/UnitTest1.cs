@@ -42,7 +42,7 @@ public class UnitTest1
         string currentPath = Directory.GetParent(workingDirectory)!.Parent!.Parent!.FullName;
         string path = currentPath + "/TestPrograms/IfElseTest.gtl";
         string output = Parse(path);
-        string expectedoutput = "(program (statement (if if ( (expr (literal (boolean_literal TRUE))) ) then { } (else else { }))) <EOF>)";
+        string expectedoutput = "(program (statement (if if ( (expr (literal (boolean_literal TRUE))) ) then { } (else else { }))) <EOF)";
         Console.WriteLine(output);
         Console.WriteLine(expectedoutput);
         Assert.IsTrue(output.Equals(expectedoutput));
