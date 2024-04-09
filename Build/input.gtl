@@ -1,18 +1,19 @@
-x;
 int someVar = 3;
+int x = 5;
 
 // Nonsensical function;
 intFunction : (int aVar) -> int {
-    int x = 5;
     int y = x + 10 * 5;
 
     if (x < 10 * 5) then {
         int z = 10 / 5;
-    } else if(x == 10) then {
-        x MOD 2;
-    } else {
-        int z = 10 * 5;
     }
+    else if (x == 10) then {
+        x MOD 2;
+    }
+    else {
+        int z = 10 * 5;
+    };
 
     x - 5;
 }
@@ -20,7 +21,7 @@ intFunction : (int aVar) -> int {
 intFunction(someVar);
 
 boolFunction : () -> bool {
-    bool a = TRUE;
+    TRUE;
 }
 
 bool a = boolFunction();
@@ -47,17 +48,18 @@ Strategyspace stratspace = [
     (deflect, deflect)
 ];
 
-Payoffs payoff = [
+Payoff payoff = [
     p1 -> [1,4,0,2],
     p2 -> [1,0,4,2]
 ];
 
-Game prisoners = (
-    Players:
-        p1 chooses aStrat1,
-        p2 chooses aStrat2
-    Strategyspace:
-        stratspace
-    Payoffs:
-        payoff
-);
+
+Players p = [
+    p1 chooses aStrat1,
+    p2 chooses aStrat2,
+    p3 chooses aStrat3
+];
+
+Game prisoners = (stratspace, p, payoff);
+
+prisoners.run(5);
