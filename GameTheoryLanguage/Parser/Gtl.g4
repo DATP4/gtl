@@ -109,8 +109,12 @@ game_variable_declaration
 
 game_expr
     : array
-    | (expr) THEN move
+    | action
     | game_tuple
+    ;
+
+action
+    : '('expr?')' THEN move
     ;
 
 game_utility_function
