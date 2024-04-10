@@ -20,9 +20,9 @@ static void MyParseMethod()
     GtlParser.ProgramContext tree = parser.program(); // Assign parse tree to a variable
 
     // Create a visitor
-    /* CustomGtlVisitor visitor = new CustomGtlVisitor(); */
-    /**/
-    /* _ = visitor.VisitProgram(tree); */
+    CustomGtlVisitor visitor = new CustomGtlVisitor();
+
+    _ = visitor.VisitProgram(tree);
 
     // Optionally print the parse tree for debugging
     Console.WriteLine(tree.ToStringTree(parser));

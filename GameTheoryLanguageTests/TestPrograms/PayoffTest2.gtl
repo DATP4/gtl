@@ -1,7 +1,0 @@
-int x = 2;
-int y = 1;
-int z = 0;
-Payoffs payoff = [
-    p1 -> [x,y,z,x],
-    p2 -> [x,z,y,x]
-];
