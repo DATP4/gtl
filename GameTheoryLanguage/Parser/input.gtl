@@ -26,6 +26,8 @@ boolFunction : () -> bool {
 
 bool a = boolFunction();
 
+Moves t = [cooperate, deflect];
+
 // Declare actions
 Action oppDeflect = (gamestate.opponent.lastmove == cooperate) then deflect;
 Action oppCooperate = (gamestate.opponent.lastmove == deflect) then cooperate;
@@ -56,8 +58,7 @@ Payoff payoff = [
 
 Players p = [
     p1 chooses aStrat1,
-    p2 chooses aStrat2,
-    p3 chooses aStrat3
+    p2 chooses aStrat2
 ];
 
 Game prisoners = (stratspace, p, payoff);
