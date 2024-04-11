@@ -1,5 +1,4 @@
-cd ./Build
-antlr4 -Dlanguage=CSharp -o ../GameTheoryLanguage/out Gtl.g4
-cd ../GameTheoryLanguage
+cd ./GameTheoryLanguage/Parser
+antlr4 -Dlanguage=CSharp -o ../out Gtl.g4
+cd ..
 dotnet run
-

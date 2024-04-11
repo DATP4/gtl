@@ -130,7 +130,7 @@ move
     ;
 
 game_functions
-    : ID '.' RUN '(' INT ')'
+    : ID '.' RUN '(' expr ')'
     ;
 
 // Types
