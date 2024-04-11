@@ -1,5 +1,8 @@
 ﻿using Antlr4.Runtime;
 
+using static System.IO.Stream;
+
+
 static void MyParseMethod()
 {
     // Read input from a file
@@ -23,6 +26,11 @@ static void MyParseMethod()
     /* CustomGtlVisitor visitor = new CustomGtlVisitor(); */
     /**/
     /* _ = visitor.VisitProgram(tree); */
+
+    TransVisitor Transpilor = new TransVisitor();
+
+    _ = Transpilor.VisitProgram(tree);
+
 
     // Optionally print the parse tree for debugging
     Console.WriteLine(tree.ToStringTree(parser));
