@@ -47,14 +47,18 @@ public class TypecheckingTests
     {
         string input1 = "int test = 1 + 1 * 7;";
         string input2 = "real test2 = 1.5 + 1.6 / 10.0;";
-        string input3 = "int test = 1 + 1.5;";
-        string input4 = "real test2 = 1.5 + 1;";
+        string input3 = "5 MOD 3;";
+        string input4 = "int test = 1 + 1.5;";
+        string input5 = "real test2 = 1.5 + 1;";
+        string input6 = "5.0 MOD 3.0;";
 
         AssertTrue(input1);
         AssertTrue(input2);
+        AssertTrue(input3);
 
-        AssertFalse<BinaryExpressionException>(input3);
         AssertFalse<BinaryExpressionException>(input4);
+        AssertFalse<BinaryExpressionException>(input5);
+        AssertFalse<WrongTypeException>(input6);
     }
 
     [TestMethod]
