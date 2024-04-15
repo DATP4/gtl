@@ -16,7 +16,12 @@ static void MyParseMethod()
     CommonTokenStream tokens = new CommonTokenStream(lexer);
 
     // Create a parser
-    GtlParser parser = new GtlParser(tokens);
+    GtlParser parser = new GtlParser(tokens)!;
+
+    parser.ErrorHandler = new ErrorStrategy();
+    parser.RemoveErrorListeners();
+    parser.AddErrorListener(new ErrorListener());
+
     GtlParser.ProgramContext tree = parser.program(); // Assign parse tree to a variable
 
     // Create a visitor
