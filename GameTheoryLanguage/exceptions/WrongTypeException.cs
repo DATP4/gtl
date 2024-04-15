@@ -15,4 +15,9 @@ public class WrongTypeException : Exception
         : base(message, inner)
     {
     }
+    public WrongTypeException(string stmtType, string type1, string type2)
+    {
+        string message = $"{stmtType} expected type {type1} but recieved {type2}.";
+        throw new WrongTypeException(message);
+    }
 }

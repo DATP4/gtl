@@ -88,7 +88,7 @@ public class TypecheckingTests
 
         AssertTrue(input1);
 
-        AssertFalse<BooleanExpressionException>(input2);
+        AssertFalse<WrongTypeException>(input2);
     }
 
     [TestMethod]
@@ -313,6 +313,7 @@ public class TypecheckingTests
         CustomGtlVisitor visitor = new CustomGtlVisitor();
 
         Exception caughtException = null!;
+        string errormessage = "";
 
         try
         {
@@ -321,8 +322,9 @@ public class TypecheckingTests
         catch (Exception ex)
         {
             caughtException = ex;
+            errormessage = ex.Message;
         }
 
-        Assert.IsNull(caughtException, "Unexpected exception occurred.");
+        Assert.IsNull(caughtException, errormessage);
     }
 }
