@@ -15,4 +15,9 @@ public class DeclarationException : Exception
         : base(message, inner)
     {
     }
+    public DeclarationException(string type1, string type2)
+    {
+        string message = $"Declaration expected type {type1} but recieved {type2}.";
+        throw new DeclarationException(message);
+    }
 }

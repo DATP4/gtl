@@ -36,7 +36,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string valueType = (string)Visit(context.expr());
         if (!type.Equals(valueType))
         {
-            throw new DeclarationException($"Declaration expected type {type} but received {valueType}");
+            throw new DeclarationException(type, valueType);
         }
         ScopeStack.Peek().AddVariable(variable, type);
         return type;
@@ -94,22 +94,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
         if (!lastExpressionType.Equals(func_type))
         {
-            throw new WrongTypeException($"Function declaration expected type {func_type} but received type {lastExpressionType}");
+            throw new WrongTypeException("Function declaration", func_type, lastExpressionType);
         }
-
-        /*
-        foreach (var e in funcVTable.Variables)
-        {
-            if (e.Key == func_type)
-            {
-                continue;
-            }
-            else
-            {
-                throw new WrongTypeException("Non return values has been saved and thats a no no");
-            }
-        }
-        */
         ExitScope();
 
         return null!;
@@ -121,7 +107,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("bool"))
         {
-            throw new WrongTypeException($"if statement expected type bool but received {exprtype}");
+            throw new WrongTypeException("If statement", "bool", exprtype);
         }
         EnterScope(new Scope());
         string ifLastStatement = "";
@@ -157,7 +143,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                 ifElseLastStatement = (string)Visit(elseifcontext);
                 if (ifLastStatement != ifElseLastStatement)
                 {
-                    throw new WrongTypeException($"Elseif statement expected type {ifLastStatement} but received {ifElseLastStatement}");
+                    throw new WrongTypeException("Elseif statement", ifLastStatement, ifElseLastStatement);
                 }
             }
 
@@ -165,7 +151,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         ifElseLastStatement = (string)Visit(context.@else());
         if (ifLastStatement != ifElseLastStatement)
         {
-            throw new WrongTypeException($"Else statement expected type {ifLastStatement} but received {ifElseLastStatement}");
+            throw new WrongTypeException("Else statement", ifLastStatement, ifElseLastStatement);
         }
         return ifLastStatement;
     }
@@ -176,7 +162,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("bool"))
         {
-            throw new WrongTypeException($"else if statement expected type bool but received {exprtype}");
+            throw new WrongTypeException("Elseif statement", "bool", exprtype);
         }
         EnterScope(new Scope());
         string ifLastStatement = "";
@@ -268,8 +254,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitBinaryExpr(GtlParser.BinaryExprContext context)
     {
         Console.WriteLine("Visiting binary expr");
-        object left = (string)Visit(context.expr(0));
-        object right = (string)Visit(context.expr(1));
+        string left = (string)Visit(context.expr(0));
+        string right = (string)Visit(context.expr(1));
         if (left.Equals("int") && right.Equals("int"))
         {
             return "int";
@@ -278,7 +264,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "real";
         }
-        throw new BinaryExpressionException($"binary expression expected type {left} but received type {right}");
+        throw new BinaryExpressionException(left, right);
+        //throw new BinaryExpressionException($"binary expression expected type {left} but received type {right}");
     }
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
@@ -305,7 +292,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "bool";
         }
-        throw new BooleanExpressionException($"boolean expression expected type {left} but received type {right}");
+        throw new BooleanExpressionException(left, right);
     }
     public override object VisitLogicalNotExpr(GtlParser.LogicalNotExprContext context)
     {
@@ -315,7 +302,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return "bool";
         }
-        throw new BooleanExpressionException($"Logical not expression expected type bool but received type {expr}");
+        throw new WrongTypeException("Logical not expression", "bool", expr);
     }
     public override object VisitGame_functions([NotNull] GtlParser.Game_functionsContext context)
     {
@@ -323,12 +310,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string gametype = (string)VisitId(context.ID().GetText());
         if (!gametype.Equals("Game"))
         {
-            throw new WrongTypeException($"Game function expected type Game but received {gametype}");
+            throw new WrongTypeException("Game function", "Game", gametype);
         }
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("int"))
         {
-            throw new WrongTypeException($"Game function expected type int but received {exprtype}");
+            throw new WrongTypeException("Game function", "int", exprtype);
         }
         return base.VisitGame_functions(context);
     }
@@ -339,7 +326,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string type = (string)VisitId(id);
         if (!type.Equals("object"))
         {
-            throw new WrongTypeException($"expected type object from {id} but received {type}");
+            throw new WrongTypeException($"member expression expected type object from {id} but received {type}");
         }
         if (!Objecttable.Contains(id))
         {
@@ -372,7 +359,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             string memberid = membercontexts[i].ID().GetText();
             if (!Objecttable.Contains(memberid))
             {
-                throw new MemberAccessException("not found in object table");
+                throw new MemberAccessException($"couldnt find entry {memberid} in objecttable");
             }
         }
         string[][] objectarray;
@@ -410,7 +397,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string functionId = context.ID().GetText();
         if (!ScopeStack.Peek().FtableContains(functionId))
         {
-            throw new FunctionCallException("Function not found in Function table");
+            throw new FunctionCallException($"{functionId} not found in Function table");
         }
         string[] stringArray = [];
         foreach (GtlParser.ExprContext exprcontext in context.arg_call().expr())
@@ -426,7 +413,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             if (!stringArray[i].Equals(functionTypes[0][i]))
             {
-                throw new FunctionCallException($"expected type {functionTypes[0][i]} in function call but received {stringArray[i]}");
+                throw new FunctionCallException(functionTypes[0][i], stringArray[i]);
             }
         }
         return ScopeStack.Peek().FtableFind(functionId)[1][0];
@@ -442,7 +429,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string arraytype = (string)Visit(context.array());
         if (!arraytype.Equals("intarray"))
         {
-            throw new WrongTypeException($"Utility function expected type intarray but received {arraytype}");
+            throw new WrongTypeException("Utility function", "intarray", arraytype);
         }
         return "utilarray";
     }
@@ -482,7 +469,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string type = (string)VisitId(context.ID(1).GetText());
         if (!type.Equals("Strategy"))
         {
-            throw new DeclarationException("Expected type strategy but received " + type);
+            throw new DeclarationException("Strategy", type);
         }
         ScopeStack.Peek().AddVariable(id, "player");
         return "player";
@@ -503,7 +490,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string valuetype = (string)Visit(context.game_expr());
         if (!gametype.Equals(valuetype))
         {
-            throw new WrongTypeException($"Game declaration expected type {gametype} but received {valuetype}");
+            throw new WrongTypeException("Game declaration", gametype, valuetype);
         }
         ScopeStack.Peek().AddVariable(context.ID().GetText(), gametype);
         return null!;
@@ -531,12 +518,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string expressiontype = (string)Visit(context.expr());
         if (!expressiontype.Equals("bool"))
         {
-            throw new WrongTypeException($"Action expected type bool but received {expressiontype}");
+            throw new WrongTypeException("Action", "bool", expressiontype);
         }
         string movetype = (string)Visit(context.move());
         if (!movetype.Equals("move"))
         {
-            throw new WrongTypeException($"Action expected type move but received {movetype}");
+            throw new WrongTypeException("Action", "bool", movetype);
         }
         return "Action";
     }
@@ -549,7 +536,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             string valuetype = (string)Visit(context.array_type(i));
             if (!arraytype.Equals(valuetype))
             {
-                throw new WrongTypeException("expected type " + arraytype + " but received " + valuetype);
+                throw new WrongTypeException("Array", arraytype, valuetype);
             }
         }
         if (arraytype.Equals("utilarray"))
@@ -578,7 +565,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             string type = (string)VisitId(move.GetText());
             if (!type.Equals("move"))
             {
-                throw new WrongTypeException($"Tuple expected type move but received {type}");
+                throw new WrongTypeException("Tuple", "move", type);
             }
         }
         return "tuple";
@@ -599,15 +586,15 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         Console.WriteLine(payofftype);
         if (!stratspacetype.Equals("Strategyspace"))
         {
-            throw new WrongTypeException($"game tuple expected type Strategyspace but received type {stratspacetype}");
+            throw new WrongTypeException("Game tuple", "Strategyspace", stratspacetype);
         }
         if (!playerlisttype.Equals("Players"))
         {
-            throw new WrongTypeException($"game tuple expected type Players but received type {playerlisttype}");
+            throw new WrongTypeException("Game tuple", "Players", playerlisttype);
         }
         if (!payofftype.Equals("Payoff"))
         {
-            throw new WrongTypeException($"game tuple expected type Payoff but received type {payofftype}");
+            throw new WrongTypeException("Game tuple", "Payoff", payofftype);
         }
         return "Game";
     }
@@ -618,7 +605,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             return ScopeStack.Peek().VtableFind(id);
         }
-        throw new VariableNotFoundException("Variable " + id + " not found");
+        throw new VariableNotFoundException($"Variable {id} not found");
     }
     // Methods to support scope handling
     private void EnterScope(Scope scope) // TODO: Add FTable

@@ -15,4 +15,9 @@ public class MemberAccessException : Exception
         : base(message, inner)
     {
     }
+    public MemberAccessException(string type1, string type2)
+    {
+        string message = $"MemberAccess expected type {type1} but recieved {type2}.";
+        throw new MemberAccessException(message);
+    }
 }
