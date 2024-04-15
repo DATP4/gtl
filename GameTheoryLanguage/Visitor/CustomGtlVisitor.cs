@@ -601,9 +601,9 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitUnaryExpr([NotNull] GtlParser.UnaryExprContext context)
     {
         string exprtype = (string)Visit(context.expr());
-        if (!exprtype.Equals("int") || !exprtype.Equals("bool"))
+        if (!exprtype.Equals("int") && !exprtype.Equals("real"))
         {
-            throw new WrongTypeException("Unary expression", "int or type bool", exprtype);
+            throw new WrongTypeException("Unary expression", "int or type real", exprtype);
         }
         return exprtype;
     }
