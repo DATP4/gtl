@@ -1,3 +1,4 @@
+bool ting = -TRUE;
 int someVar = 3;
 int x = 5;
 
