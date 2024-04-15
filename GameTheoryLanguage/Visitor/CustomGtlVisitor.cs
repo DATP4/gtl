@@ -46,7 +46,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         ScopeStack.Peek().AddVariable(variable, type);
         return type;
     }
-
     public override object VisitFunction([NotNull] GtlParser.FunctionContext context)
     {
         //check ftable, if it exists check input type against expected type and return functions return type, else add to ftable
@@ -105,7 +104,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
         return null!;
     }
-
+    public override object VisitIfElseExpr([NotNull] GtlParser.IfElseExprContext context)
+    {
+        return Visit(context.ifElse());
+    }
     public override object VisitIfElse(GtlParser.IfElseContext context)
     {
         Console.WriteLine("Visiting if statement");
@@ -160,7 +162,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         }
         return ifLastStatement;
     }
-
     public override object VisitElseif([NotNull] GtlParser.ElseifContext context)
     {
         Console.WriteLine("Visiting elseif statement");
@@ -267,10 +268,13 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         }
         if (left.Equals("real") && right.Equals("real"))
         {
+            if (context.op.Text.Equals("MOD"))
+            {
+                throw new WrongTypeException("Modulus", "int", "real");
+            }
             return "real";
         }
         throw new BinaryExpressionException(left, right);
-        //throw new BinaryExpressionException($"binary expression expected type {left} but received type {right}");
     }
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
