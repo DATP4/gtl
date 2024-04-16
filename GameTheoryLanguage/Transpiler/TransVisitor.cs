@@ -11,10 +11,8 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
-
-        _outputFile.Add("class program { \n static public void Main(string[] args){");
-        _ = base.VisitProgram(context);
-        _outputFile.Add("}\n}");
+        _outputFile.Add("fn main() {println!(\"Hello, world!\");}");
+        //_ = base.VisitProgram(context);
         GtlCFile writer = new GtlCFile();
         writer.PrintFileToOutput(_outputFile);
         return null!;
