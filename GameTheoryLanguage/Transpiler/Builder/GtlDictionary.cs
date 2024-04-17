@@ -1,23 +1,24 @@
 public class GtlDictionary
 {
-    static Dictionary<string, string> Types { get; } = new Dictionary<string, string>(){
-        {"int", "int"},
-        {"real", "double"},
-        {"bool", "bool"}
+    // Dictionary for each visitor that has different syntax from rust. Mapping GTL to Rust
+    static Dictionary<string, Dictionary<string, string>> Dictionary { get; } = new Dictionary<string, Dictionary<string, string>>(){
+       {"Boolean", new Dictionary<string, string>(){
+            {"TRUE", "true"},
+            {"FALSE", "false"}
+       }},
+       {"BoolOperator", new Dictionary<string, string>(){
+            {"^^", "^"},
+            {"&&", "&"},
+            {"||", "|"}
+       }},
+       {"ArithmeticOperator", new Dictionary<string, string>(){
+           {"MOD", "%"}
+       }}
     };
 
-    static Dictionary<string, string> BooleanValues { get; } = new Dictionary<string, string>(){
-       {"TRUE", "true"},
-       {"FALSE", "false"}
-    };
-
-    public string TranslateType(string type)
+    // Translate method to return the rust syntax.
+    public string Translate(string section, string literal)
     {
-        return Types[type];
-    }
-
-    public string TranslateBoolean(string literal)
-    {
-        return BooleanValues[literal];
+        return Dictionary[section][literal];
     }
 }
