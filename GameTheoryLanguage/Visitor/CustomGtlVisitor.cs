@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
@@ -515,7 +516,15 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitAction([NotNull] GtlParser.ActionContext context)
     {
-        string expressiontype = (string)Visit(context.expr());
+        string expressiontype;
+        if (context.expr() == null)
+        {
+            expressiontype = "bool";
+        }
+        else
+        {
+            expressiontype = (string)Visit(context.expr());
+        }
         if (!expressiontype.Equals("bool"))
         {
             throw new WrongTypeException("Action", "bool", expressiontype);
