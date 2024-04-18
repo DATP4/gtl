@@ -8,12 +8,13 @@ using Antlr4.Runtime.Misc;
 public class CustomGtlVisitor : GtlBaseVisitor<object>
 {
     private Stack<Scope> ScopeStack { get; } = new Stack<Scope>();
+    private readonly Objecttable _objecttable = new Objecttable();
 
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
-        Objecttable.Clear();
-        Objecttable.Add("gamestate", [["opponent", "turn"], ["object", "int"]]);
-        Objecttable.Add("opponent", [["lastmove"], ["move"]]);
+        _objecttable.Clear();
+        _objecttable.Add("gamestate", [["opponent", "turn"], ["object", "int"]]);
+        _objecttable.Add("opponent", [["lastmove"], ["move"]]);
         EnterScope(new Scope());
         ScopeStack.Peek().AddVariable("gamestate", "object");
         Console.WriteLine("Visiting program");
@@ -337,7 +338,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new WrongTypeException($"member expression expected type object from {id} but received {type}");
         }
-        if (!Objecttable.Contains(id))
+        if (!_objecttable.Contains(id))
         {
             throw new MemberAccessException("Object not found");
         }
@@ -345,7 +346,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         if (membercontexts.Length > 1)
         {
             string nextid = membercontexts[0].ID().GetText();
-            string[][] objarray = Objecttable.Find(id);
+            string[][] objarray = _objecttable.Find(id);
             int k = -1;
             for (int i = 0; i < objarray[0].Length; i++)
             {
@@ -366,7 +367,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         for (int i = 0; i < membercontexts.Length - 2; i++)
         {
             string memberid = membercontexts[i].ID().GetText();
-            if (!Objecttable.Contains(memberid))
+            if (!_objecttable.Contains(memberid))
             {
                 throw new MemberAccessException($"couldnt find entry {memberid} in objecttable");
             }
@@ -374,11 +375,11 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string[][] objectarray;
         if (membercontexts.Length == 1)
         {
-            objectarray = Objecttable.Find(id);
+            objectarray = _objecttable.Find(id);
         }
         else
         {
-            objectarray = Objecttable.Find(membercontexts[membercontexts.Length - 2].ID().GetText());
+            objectarray = _objecttable.Find(membercontexts[membercontexts.Length - 2].ID().GetText());
         }
         int j = -1;
         for (int i = 0; i < objectarray[0].Length; i++)
