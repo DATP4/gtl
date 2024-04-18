@@ -10,7 +10,6 @@ public class ErrorListener : BaseErrorListener
 {
     public override void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg, RecognitionException e)
     {
-        Console.WriteLine(msg + " in line " + line + " position " + charPositionInLine);
-        throw new ParserException();
+        throw new ParserException(msg + " in line " + line + " position " + charPositionInLine);
     }
 }

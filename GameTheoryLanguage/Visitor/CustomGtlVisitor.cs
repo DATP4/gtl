@@ -615,6 +615,15 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         }
         return "Game";
     }
+    public override object VisitUnaryExpr([NotNull] GtlParser.UnaryExprContext context)
+    {
+        string exprtype = (string)Visit(context.expr());
+        if (!exprtype.Equals("int") && !exprtype.Equals("real"))
+        {
+            throw new WrongTypeException("Unary expression", "int or type real", exprtype);
+        }
+        return exprtype;
+    }
     private object VisitId(string id)
     {
         Console.WriteLine("Visiting ID expression");

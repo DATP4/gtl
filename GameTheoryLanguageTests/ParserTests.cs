@@ -15,12 +15,28 @@ public class ParserTests
         string input3 = "real y = 5.0;";
         string input4 = "dsa z = 5;";
         string input5 = "int x = 5";
+        string input6 = "int x = int y = 5;";
 
         AssertTrue(input1);
         AssertTrue(input2);
         AssertTrue(input3);
         AssertFalse(input4);
         AssertFalse(input5);
+        AssertFalse(input6);
+    }
+    [TestMethod]
+    public void BinaryexpressionTest()
+    {
+        string input1 = "-5 + 5;";
+        string input2 = "(-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
+        string input3 = "((()());";
+        string input4 = "5 - + 5;";
+
+        AssertTrue(input1);
+        AssertTrue(input2);
+
+        AssertFalse(input3);
+        AssertFalse(input4);
     }
     [TestMethod]
     public void BooleanTest()
@@ -30,16 +46,18 @@ public class ParserTests
         string input3 = "TRUE == FALSE;";
         string input4 = "TRUE ^^ FALSE;";
         string input5 = "1 < 3;";
-        string input6 = "1 => 3;";
-        string input7 = "TRUE ^^ FALSE";
+        string input6 = "(TRUE && TRUE) || ((TRUE && TRUE) == TRUE);";
+        string input7 = "1 => 3;";
+        string input8 = "TRUE ^^ FALSE";
 
         AssertTrue(input1);
         AssertTrue(input2);
         AssertTrue(input3);
         AssertTrue(input4);
         AssertTrue(input5);
-        AssertFalse(input6);
+        AssertTrue(input6);
         AssertFalse(input7);
+        AssertFalse(input8);
     }
     [TestMethod]
     public void FunctionTest()
@@ -211,19 +229,17 @@ public class ParserTests
         parser.RemoveErrorListeners();
         parser.AddErrorListener(new ErrorListener());
         Exception caughtException = null!;
+        string errormessage = "";
         try
         {
             var _ = Assert.ThrowsException<ParserException>(() => parser.program());
+            errormessage = _.Message;
         }
         catch (Exception e)
         {
             caughtException = e;
         }
 
-        Assert.IsNotNull(caughtException, "exception occurred.");
-        if (caughtException == null)
-        {
-            Console.WriteLine(parser.program().ToStringTree());
-        }
+        Assert.IsNotNull(caughtException, errormessage);
     }
 }
