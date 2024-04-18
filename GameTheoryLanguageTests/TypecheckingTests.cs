@@ -49,18 +49,20 @@ public class TypecheckingTests
     {
         string input1 = "int test = 1 + 1 * 7;";
         string input2 = "real test2 = 1.5 + 1.6 / 10.0;";
-        string input3 = "5 MOD 3;";
-        string input4 = "int test = 1 + 1.5;";
-        string input5 = "real test2 = 1.5 + 1;";
-        string input6 = "5.0 MOD 3.0;";
+        string input3 = "int test = (-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
+        string input4 = "5 MOD 3;";
+        string input5 = "int test = 1 + 1.5;";
+        string input6 = "real test2 = 1.5 + 1;";
+        string input7 = "5.0 MOD 3.0;";
 
         AssertTrue(input1);
         AssertTrue(input2);
         AssertTrue(input3);
+        AssertTrue(input4);
 
-        AssertFalse<BinaryExpressionException>(input4);
         AssertFalse<BinaryExpressionException>(input5);
-        AssertFalse<WrongTypeException>(input6);
+        AssertFalse<BinaryExpressionException>(input6);
+        AssertFalse<WrongTypeException>(input7);
     }
 
     [TestMethod]
@@ -70,20 +72,22 @@ public class TypecheckingTests
         string input2 = "bool test1 = 1 > 2;";
         string input3 = "bool test1 = 1 != 0;";
         string input4 = "bool test1 = 1 <= 2;";
-        string input5 = "bool test1 = TRUE && 2.0;";
-        string input6 = "bool test1 = FALSE && 1;";
-        string input7 = "bool test1 = 1 > 0.8;";
-        string input8 = "bool test1 = 1 && 2;";
+        string input5 = "bool test1 = (TRUE && TRUE) || ((TRUE && TRUE) == TRUE);";
+        string input6 = "bool test1 = TRUE && 2.0;";
+        string input7 = "bool test1 = FALSE && 1;";
+        string input8 = "bool test1 = 1 > 0.8;";
+        string input9 = "bool test1 = 1 && 2;";
 
         AssertTrue(input1);
         AssertTrue(input2);
         AssertTrue(input3);
         AssertTrue(input4);
+        AssertTrue(input5);
 
-        AssertFalse<BooleanExpressionException>(input5);
         AssertFalse<BooleanExpressionException>(input6);
         AssertFalse<BooleanExpressionException>(input7);
         AssertFalse<BooleanExpressionException>(input8);
+        AssertFalse<BooleanExpressionException>(input9);
     }
 
     [TestMethod]
@@ -96,7 +100,24 @@ public class TypecheckingTests
 
         AssertFalse<WrongTypeException>(input2);
     }
+    [TestMethod]
+    public void TestUnaryExpression()
+    {
+        string input1 = "int x = -5;";
+        string input2 = "real x = -5.0;";
+        string input3 = "-5 - -5;";
+        string input4 = "-5 + -5;";
+        string input5 = "int x = -5; -x;";
+        string input6 = "-TRUE;";
+        AssertTrue(input1);
+        AssertTrue(input2);
+        AssertTrue(input3);
+        AssertTrue(input4);
+        AssertTrue(input5);
 
+        AssertFalse<WrongTypeException>(input6);
+
+    }
     [TestMethod]
     public void TestID()
     {
