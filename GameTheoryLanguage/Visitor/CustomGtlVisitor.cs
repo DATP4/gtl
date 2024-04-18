@@ -39,6 +39,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new DeclarationException(type, valueType);
         }
+        if (ScopeStack.Peek().VtableContains(variable))
+        {
+            throw new DeclarationException($"Variable {variable} already exists");
+        }
         ScopeStack.Peek().AddVariable(variable, type);
         return type;
     }

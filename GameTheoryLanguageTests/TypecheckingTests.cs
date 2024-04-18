@@ -34,12 +34,14 @@ public class TypecheckingTests
         string input2 = "int x = 4;";
         string input3 = "bool x = 1;";
         string input4 = "int x = 1.4;";
+        string input5 = "int x = 5; int x = 5;";
 
         AssertTrue(input1);
         AssertTrue(input2);
 
         AssertFalse<DeclarationException>(input3);
         AssertFalse<DeclarationException>(input4);
+        AssertFalse<DeclarationException>(input5);
     }
 
     [TestMethod]
