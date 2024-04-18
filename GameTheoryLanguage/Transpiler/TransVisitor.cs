@@ -11,8 +11,9 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
-        _outputFile.Add("fn main() {println!(\"Hello, world!\");}");
-        //_ = base.VisitProgram(context);
+        _outputFile.Add("fn main()\n{\n");
+        _ = base.VisitProgram(context);
+        _outputFile.Add("\n}");
         GtlCFile writer = new GtlCFile();
         writer.PrintFileToOutput(_outputFile);
         return null!;
@@ -61,14 +62,14 @@ public class TransVisitor : GtlBaseVisitor<object>
             return base.VisitLiteral(context);
         }
 
-        // Other literals than booleans matches the transpiled language
+        // Other literals than booleans matches the rust syntax
         return context.GetText();
     }
 
     public override object VisitBoolean_literal([NotNull] GtlParser.Boolean_literalContext context)
     {
-        // Translates the boolean literal to the transpiled language
-        return GtlDictionary.TranslateBoolean(context.GetText());
+        // Translates the boolean literal to the rust
+        return GtlDictionary.Translate("Boolean", context.GetText());
     }
 
     public override object VisitIdExpr([NotNull] GtlParser.IdExprContext context)
@@ -78,15 +79,20 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
+        // Seperates the boolean expression, translates the operator, and combines them again.
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
-        string op = context.op.Text;
+        string op = GtlDictionary.Translate("BoolOperator", context.op.Text);
         return $"{left} {op} {right}";
     }
 
     public override object VisitBinaryExpr([NotNull] GtlParser.BinaryExprContext context)
     {
-        return context.GetText();
+        // Seperates the binary expression, translates the operator, and combines them again.
+        string left = (string)Visit(context.expr(0));
+        string right = (string)Visit(context.expr(1));
+        string op = GtlDictionary.Translate("ArithmeticOperator", context.op.Text);
+        return $"{left} {op} {right}";
     }
 
 
@@ -138,47 +144,7 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
-        // Language translates the type (real -> double). The rest is handled in their respective visits
-        return $"{GtlDictionary.TranslateType(context.type().GetText())} {context.ID().GetText()} = {Visit(context.expr())};";
+        // No need for type declaration in rust, due to out typechecking prior to this.
+        return $"let {context.ID().GetText()} = {Visit(context.expr())};";
     }
 }
-
-// // input 
-// int x = 1;
-
-// if (x < 10 * 5) then {
-//     int z = 10 / 5;
-// } else if(x == 10) then {
-//     x * 2;
-// } else {
-//     int z = 10 * 5;
-// };
-
-// // expected output
-// class program
-// {
-//     static public void Main(string[] args)
-//     {
-//         int x = 1;
-
-//         object funcif1()
-//         {
-//             if (x < 10 * 5)
-//             {
-//                 int z = 10 / 5;
-//                 return z;
-//             }
-//             else if (x == 10)
-//             {
-//                 return x * 2;
-//             }
-//             else
-//             {
-//                 int z = 10 * 5;
-//                 return z;
-//             }
-//         }
-//         funcif1();
-//     }
-// }
-

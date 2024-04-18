@@ -34,12 +34,14 @@ public class TypecheckingTests
         string input2 = "int x = 4;";
         string input3 = "bool x = 1;";
         string input4 = "int x = 1.4;";
+        string input5 = "int x = 5; int x = 5;";
 
         AssertTrue(input1);
         AssertTrue(input2);
 
         AssertFalse<DeclarationException>(input3);
         AssertFalse<DeclarationException>(input4);
+        AssertFalse<DeclarationException>(input5);
     }
 
     [TestMethod]
@@ -48,15 +50,19 @@ public class TypecheckingTests
         string input1 = "int test = 1 + 1 * 7;";
         string input2 = "real test2 = 1.5 + 1.6 / 10.0;";
         string input3 = "int test = (-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
-        string input4 = "int test = 1 + 1.5;";
-        string input5 = "real test2 = 1.5 + 1;";
+        string input4 = "5 MOD 3;";
+        string input5 = "int test = 1 + 1.5;";
+        string input6 = "real test2 = 1.5 + 1;";
+        string input7 = "5.0 MOD 3.0;";
 
         AssertTrue(input1);
         AssertTrue(input2);
         AssertTrue(input3);
+        AssertTrue(input4);
 
-        AssertFalse<BinaryExpressionException>(input4);
         AssertFalse<BinaryExpressionException>(input5);
+        AssertFalse<BinaryExpressionException>(input6);
+        AssertFalse<WrongTypeException>(input7);
     }
 
     [TestMethod]
