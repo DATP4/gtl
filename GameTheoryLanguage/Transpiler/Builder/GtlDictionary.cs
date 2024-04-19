@@ -6,17 +6,6 @@ public class GtlDictionary
             {"TRUE", "true"},
             {"FALSE", "false"}
        }},
-       {"BoolOperator", new Dictionary<string, string>(){
-            {"^^", "^"},
-            {"&&", "&"},
-            {"||", "|"},
-            {"==", "=="},
-            {">", ">"},
-            {"<", "<"},
-            {"<=", "<="},
-            {">=", ">="},
-            {"!=", "!="}
-       }},
        {"ArithmeticOperator", new Dictionary<string, string>(){
             {"MOD", "%"},
             {"*", "*"},

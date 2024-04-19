@@ -66,7 +66,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         // Seperates the boolean expression, translates the operator, and combines them again.
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
-        string op = GtlDictionary.Translate("BoolOperator", context.op.Text);
+        string op = context.op.Text;
         return $"{left} {op} {right}";
     }
 
