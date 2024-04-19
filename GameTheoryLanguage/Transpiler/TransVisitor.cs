@@ -7,13 +7,22 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     GtlDictionary GtlDictionary { get; } = new GtlDictionary();
 
-    readonly int _ifCounter = 0;
-
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
-        _outputFile.Add("fn main()\n{\n");
-        _ = base.VisitProgram(context);
-        _outputFile.Add("\n}");
+        string retString = null!;
+        _outputFile.Add("fn main()\n{");
+        // Program consists of statements only, so we iterate them
+        foreach (var stmt in context.statement())
+        {
+            retString += Visit(stmt);
+            retString += "\n";
+        }
+        // Everything we visit but this, will return a string. We add it to our output rust file
+        if (retString != null)
+        {
+            _outputFile.Add(retString);
+        }
+        _outputFile.Add("}");
         GtlCFile writer = new GtlCFile();
         writer.PrintFileToOutput(_outputFile);
         return null!;
@@ -21,37 +30,12 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitStatement([NotNull] GtlParser.StatementContext context)
     {
-        string retString = null!; // null, if we encounter a statement that is already appended inside other contexts
-
-        // Visits the matching context and appends to string
-        if (context.expr() != null)
+        string retString = null!;
+        foreach (var children in context.children)
         {
-            retString += Visit(context.expr());
+            retString += Visit(children);
         }
-        else if (context.declaration() != null && context.declaration().Parent.Depth() == 2)
-        {
-            retString += Visit(context.declaration());
-        }
-        else if (context.function() != null)
-        {
-            retString += Visit(context.function());
-        }
-        else if (context.game_variable_declaration() != null)
-        {
-            retString += Visit(context.game_variable_declaration());
-        }
-        else if (context.game_functions() != null)
-        {
-            retString += Visit(context.game_functions());
-        }
-
-        // If any content, add to output file.
-        if (retString != null)
-        {
-            _outputFile.Add(retString);
-        }
-
-        return null!;
+        return retString!;
     }
 
     public override object VisitLiteral([NotNull] GtlParser.LiteralContext context)
@@ -98,53 +82,69 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitIfElse([NotNull] GtlParser.IfElseContext context)
     {
-        // Translating if elses, but currently only works for declarations in the body
-        string retIfString = $"void IfFunc{_ifCounter}(){'{'}";
-        retIfString += $"if ({Visit(context.expr())}) {'{'}";
+        // Placeholder to check if the last statement is a declaration
+        GtlParser.StatementContext lastStmt = null!;
+        // Beginning of if
+        string retIfString = $"if {Visit(context.expr())} {'{'}\n";
+        // Finding the last statement
+        foreach (var stmt in context.statement().Reverse())
+        {
+            lastStmt = stmt;
+            break;
+        }
+        // Appending all content of the if body
         foreach (var stmt in context.statement())
         {
-            if (stmt.declaration() != null)
-            { }
-            {
-                retIfString += (string)Visit(stmt.declaration());
-                retIfString += $"return {stmt.declaration().ID().GetText()};";
-            }
-            retIfString += (string)Visit(stmt);
+            retIfString += Visit(stmt);
+        }
+        // As rust can't return declarations, we return the id of the declaration on the next line
+        if (lastStmt.declaration() != null)
+        {
+            retIfString += "\n" + lastStmt.declaration().ID().GetText();
         }
 
+        // Repeat above process for the else if blocks
         foreach (var elseIfBlock in context.elseif())
         {
-            retIfString += $"{'}'} else if ({Visit(elseIfBlock.expr())}) {'{'}";
+            retIfString += $"\n{'}'} else if {Visit(elseIfBlock.expr())} {'{'}\n";
+            foreach (var stmt in elseIfBlock.statement().Reverse())
+            {
+                lastStmt = stmt;
+                break;
+            }
             foreach (var stmt in elseIfBlock.statement())
             {
-                if (stmt.declaration() != null)
-                {
-                    retIfString += (string)Visit(stmt.declaration());
-                    retIfString += $"return {stmt.declaration().ID().GetText()};";
-                }
-                retIfString += (string)Visit(stmt);
+                retIfString += Visit(stmt);
+            }
+            if (lastStmt.declaration() != null)
+            {
+                retIfString += "\n" + lastStmt.declaration().ID().GetText();
             }
         }
 
-        retIfString += "} else {";
+        // Repeats the process for the final else block
+        retIfString += "\n} else {\n";
+        foreach (var stmt in context.@else().statement().Reverse())
+        {
+            lastStmt = stmt;
+            break;
+        }
         foreach (var stmt in context.@else().statement())
         {
-            if (stmt.declaration() != null)
-            {
-                retIfString += (string)Visit(stmt.declaration());
-                retIfString += $"return {stmt.declaration().ID().GetText()};";
-            }
-            retIfString += (string)Visit(stmt);
+            retIfString += Visit(stmt);
         }
-        retIfString += "}}\n";
-        retIfString += $"IfFunc{_ifCounter}();";
+        if (lastStmt.declaration() != null)
+        {
+            retIfString += "\n" + lastStmt.declaration().ID().GetText();
+        }
+        retIfString += "\n};";
         return retIfString;
     }
 
 
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
-        // No need for type declaration in rust, due to out typechecking prior to this.
+        // No need for type declaration in rust, due to our typechecking prior to transpiling.
         return $"let {context.ID().GetText()} = {Visit(context.expr())};";
     }
 }
