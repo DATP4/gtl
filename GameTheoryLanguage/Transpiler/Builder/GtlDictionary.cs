@@ -1,6 +1,6 @@
 public class GtlDictionary
 {
-    // Dictionary for each visitor that has different syntax from rust. Mapping GTL to Rust
+    // Dictionary for each category that has different syntax from rust. Mapping GTL to Rust
     static Dictionary<string, Dictionary<string, string>> Dictionary { get; } = new Dictionary<string, Dictionary<string, string>>(){
        {"Boolean", new Dictionary<string, string>(){
             {"TRUE", "true"},
@@ -9,10 +9,20 @@ public class GtlDictionary
        {"BoolOperator", new Dictionary<string, string>(){
             {"^^", "^"},
             {"&&", "&"},
-            {"||", "|"}
+            {"||", "|"},
+            {"==", "=="},
+            {">", ">"},
+            {"<", "<"},
+            {"<=", "<="},
+            {">=", ">="},
+            {"!=", "!="}
        }},
        {"ArithmeticOperator", new Dictionary<string, string>(){
-           {"MOD", "%"}
+            {"MOD", "%"},
+            {"*", "*"},
+            {"/", "/"},
+            {"+", "+"},
+            {"-", "-"}
        }}
     };
 
