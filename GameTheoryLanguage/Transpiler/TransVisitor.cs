@@ -140,11 +140,17 @@ public class TransVisitor : GtlBaseVisitor<object>
         retIfString += "\n};";
         return retIfString;
     }
-
-
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
         // No need for type declaration in rust, due to our typechecking prior to transpiling.
         return $"let {context.ID().GetText()} = {Visit(context.expr())};";
+    }
+    public override object VisitParExpr([NotNull] GtlParser.ParExprContext context)
+    {
+        return $"({Visit(context.expr())})";
+    }
+    public override object VisitUnaryExpr([NotNull] GtlParser.UnaryExprContext context)
+    {
+        return $"-{Visit(context.expr())}";
     }
 }
