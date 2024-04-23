@@ -1,4 +1,4 @@
-class GtlCFile
+public class GtlCFile
 {
     public void PrintFileToOutput(List<string> file)
     {

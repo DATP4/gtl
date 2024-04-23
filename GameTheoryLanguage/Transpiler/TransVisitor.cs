@@ -3,14 +3,14 @@ using Antlr4.Runtime.Misc;
 public class TransVisitor : GtlBaseVisitor<object>
 {
 
-    readonly List<string> _outputFile = new List<string>();
+    public readonly List<string> Outputfile = new List<string>();
 
     GtlDictionary GtlDictionary { get; } = new GtlDictionary();
 
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
         string retString = null!;
-        _outputFile.Add("fn main()\n{");
+        Outputfile.Add("fn main()\n{");
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())
         {
@@ -20,11 +20,11 @@ public class TransVisitor : GtlBaseVisitor<object>
         // Everything we visit but this, will return a string. We add it to our output rust file
         if (retString != null)
         {
-            _outputFile.Add(retString);
+            Outputfile.Add(retString);
         }
-        _outputFile.Add("}");
+        Outputfile.Add("}");
         GtlCFile writer = new GtlCFile();
-        writer.PrintFileToOutput(_outputFile);
+        writer.PrintFileToOutput(Outputfile);
         return null!;
     }
 
