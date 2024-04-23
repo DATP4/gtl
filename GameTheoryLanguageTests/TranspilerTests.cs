@@ -51,7 +51,7 @@ public class TranspilerTests
         string output1 = "let test = 1 + 1 * 7;";
         string output2 = "let test = 1.5 + 1.6 / 10.0;";
         string output3 = "let test = (-5 + (4 + 3 * (4 % 5) / 1 + 5) - 3);";
-        string output4 = "5 % 3";
+        string output4 = "5 % 3;";
         AssertTrue(input1, output1);
         AssertTrue(input2, output2);
         AssertTrue(input3, output3);
@@ -135,6 +135,7 @@ class TestVisitor : TransVisitor
 {
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
+        EnterScope(new Scope());
         string retString = null!;
         Outputfile.Add("fn main()\n{");
         // Program consists of statements only, so we iterate them
@@ -151,6 +152,7 @@ class TestVisitor : TransVisitor
         Outputfile.Add("}");
         TestGtlCFile writer = new TestGtlCFile();
         writer.PrintFileToOutput(Outputfile);
+        ExitScope();
         return null!;
     }
 }
