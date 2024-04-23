@@ -9,9 +9,100 @@ public class TranspilerTests
     public void AssignmentTest()
     {
         string input1 = "int x = 3;";
+        string input2 = "bool x = TRUE;";
+        string input3 = "real x = 3.0;";
+
         string output1 = "fn main(){let x = 3;}";
+        string output2 = "fn main(){let x = true;}";
+        string output3 = "fn main(){let x = 3.0;}";
+
         AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
     }
+    [TestMethod]
+    public void BooleanExpressionTest()
+    {
+        string input1 = "bool test = TRUE && FALSE;";
+        string input2 = "bool test = 1 > 2;";
+        string input3 = "bool test = 1 != 0;";
+        string input4 = "bool test = 1 <= 2;";
+        string input5 = "bool test = (TRUE && TRUE) || ((TRUE && TRUE) == TRUE);";
+
+        string output1 = "fn main(){let test = true && false;}";
+        string output2 = "fn main(){let test = 1 > 2;}";
+        string output3 = "fn main(){let test = 1 != 0;}";
+        string output4 = "fn main(){let test = 1 <= 2;}";
+        string output5 = "fn main(){let test = (true && true) || ((true && true) == true);}";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
+        AssertTrue(input4, output4);
+        AssertTrue(input5, output5);
+    }
+    [TestMethod]
+    public void BinaryExpressionTest()
+    {
+        string input1 = "int test = 1 + 1 * 7;";
+        string input2 = "real test = 1.5 + 1.6 / 10.0;";
+        string input3 = "int test = (-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
+        string input4 = "5 MOD 3;";
+        string output1 = "fn main(){let test = 1 + 1 * 7;}";
+        string output2 = "fn main(){let test = 1.5 + 1.6 / 10.0;}";
+        string output3 = "fn main(){let test = (-5 + (4 + 3 * (4 % 5) / 1 + 5) - 3);}";
+        string output4 = "fn main(){5 % 3}";
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
+        AssertTrue(input4, output4);
+    }
+    [TestMethod]
+    public void IfElseTest()
+    {
+        string input1 = "if (TRUE) then {int x = 4; x;} else {int y = 5; y;};";
+        string input2 = "if (TRUE) then {int x = 4; x;} else if (FALSE) then {int y = 5; y;} else {int z = 6; z;};";
+        string input3 = "if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 4;} else {int z = 4;};";
+
+        string output1 = "fn main(){if true {let x = 4;x} else {let y = 5;y};}";
+        string output2 = "fn main(){if true {let x = 4;x} else if false {let y = 5;y} else {let z = 6;z};}";
+        string output3 = "fn main(){if true {let x = 4;x} else if false {let y = 4;y} else {let z = 4;z};}";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
+    }
+    /*
+    [TestMethod]
+    public void TestFunctionDeclaration()
+    {
+        string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;}";
+        string input2 = "intFunction : (int x) -> int {if (TRUE) then {5;} else {6;};}";
+
+        string output1 = "fn main(){fn intFunction : (int x) -> int {let y = x + 10;x - 5}}";
+        string output2 = "fn main(){fn intFunction : (int x) -> int {if true {5} else {6};}}";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+    }
+    */
+    /*
+    [TestMethod]
+    public void TestFunctionCall()
+    {
+        string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5);";
+        string input2 = "int a = 10; intFunction1 : (int x) -> int {int y = x + a * 5; x - 5;} intFunction1(5);";
+        string input3 = "intFunction : (int x) -> int {intFunction2 : (int x) -> int {x + 5;} intFunction2(x);} intFunction(5);";
+
+        string output1 = "fn main(){fn intFunction : (int x) -> int {let y = x + 10 * 5;x - 5}intFunction(5);}";
+        string output2 = "fn main(){let a = 10;fn intFunction : (int x) -> int {let y = x + a * 5; x - 5}intFunction(5);}";
+        string output3 = "fn main(){fn intFunction : (int x) -> int {fn intFunction2 : (int x) -> int {x + 5}intFunction2(x)}intFunction(5);}";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
+    }
+    */
     private void AssertTrue(string input, string expectedOutput)
     {
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(input));
