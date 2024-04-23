@@ -12,6 +12,11 @@ public class GtlDictionary
             {"/", "/"},
             {"+", "+"},
             {"-", "-"}
+       }},
+       {"Type", new Dictionary<string, string>(){
+            {"int", "i32"},
+            {"real", "f32"},
+            {"bool", "bool"}
        }}
     };
 
