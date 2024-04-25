@@ -88,7 +88,7 @@ public class EndToEndTests
     {
         Createtest("int_function : (int x) -> int {int y = x + 10 * 5; y - 5;} int x = int_function(5);", "assert_eq!(x, 50)", "function");
         Createtest("int a = 10; int_function1 : (int x) -> int {int y = x + a * 5; y - 5;} int x = int_function1(5);", "assert_eq!(x, 50)", "function");
-        Createtest("int_function : (int x) -> int {int_function2 : (int x) -> int {x + 5;} int y = int_function2(x);} int x = int_function(5);", "assert_eq!(x, 10)", "function");
+        Createtest("int_function : (int x) -> int {int_function2 : (int z) -> int {z + 5;} int y = int_function2(x);} int x = int_function(5);", "assert_eq!(x, 10)", "function");
         Createtest("int a = 10 + 5; int b = 5 + 13; int c = a * b; int_function : (int x) -> int {c + x;} int x = int_function(10);", "assert_eq!(x, 280)", "function");
     }
     private void ActionDeclarationTest()

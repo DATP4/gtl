@@ -1,3 +1,5 @@
+using System.Data;
+
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 namespace GameTheoryLanguageTests;
@@ -193,7 +195,7 @@ public class TypecheckingTests
     {
         string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5);";
         string input2 = "int a = 10; intFunction1 : (int x) -> int {int y = x + a * 5; x - 5;} intFunction1(5);";
-        string input3 = "intFunction : (int x) -> int {intFunction2 : (int x) -> int {x + 5;} intFunction2(x);} intFunction(5);";
+        string input3 = "intFunction : (int x) -> int {intFunction2 : (int y) -> int {y + 5;} intFunction2(x);} intFunction(5);";
         string input4 = "intFunction2 : (int x) -> int {int y = x + 10 * 5; x - 5;} x;";
         string input5 = "int x = func(4,5);";
         string input6 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5, 0);";
@@ -208,7 +210,7 @@ public class TypecheckingTests
         AssertFalse<FunctionCallException>(input5);
         AssertFalse<FunctionCallException>(input6);
         AssertFalse<FunctionCallException>(input7);
-        AssertFalse<FunctionCallException>(input8);
+        AssertFalse<DuplicateNameException>(input8);
     }
     [TestMethod]
     public void TestMemberAccess()
