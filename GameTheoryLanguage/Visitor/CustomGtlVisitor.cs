@@ -1,3 +1,4 @@
+using System.Data;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -468,6 +469,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             string type = types[i].GetText();
             string id = ids[i].GetText();
+            if (ScopeStack.Peek().VtableContains(id))
+            {
+                throw new DuplicateNameException($"{id} is already declared");
+            }
             ScopeStack.Peek().AddVariable(id, type);
         }
         return base.VisitArg_def(context);

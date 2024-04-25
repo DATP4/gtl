@@ -105,13 +105,13 @@ public class TranspilerTests
     {
         string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5);";
         string input2 = "int a = 10; intFunction : (int x) -> int {int y = x + a * 5; x - 5;} intFunction(5);";
-        string input3 = "intFunction : (int x) -> int {intFunctionNested : (int x) -> int {x + 1;} intFunctionNested(x);} intFunction(5);";
+        string input3 = "intFunction : (int x) -> int {intFunctionNested : (int z) -> int {z + 1;} intFunctionNested(x);} intFunction(5);";
         string input4 = "intFunction : (int x) -> int {int y = x + 10 * 5;} int x = intFunction(5);";
         string input5 = "intFunction : (int x, int z) -> int {z + x;} int x = 1; intFunction(x, x + 4);";
 
         string output1 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}intFunction(&(5));";
         string output2 = "let a = 10;fn intFunction(x: &i32) -> i32 {let a = 10;let y = *x + a * 5;*x - 5}intFunction(&(5));";
-        string output3 = "fn intFunction(x: &i32) -> i32 {fn intFunctionNested(x: &i32) -> i32 {*x + 1}intFunctionNested(&(*x))}intFunction(&(5));";
+        string output3 = "fn intFunction(x: &i32) -> i32 {fn intFunctionNested(z: &i32) -> i32 {*z + 1}intFunctionNested(&(*x))}intFunction(&(5));";
         string output4 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;y}let x = intFunction(&(5));";
         string output5 = "fn intFunction(x: &i32, z: &i32) -> i32 {*z + *x}let x = 1;intFunction(&(x), &(x + 4));";
 

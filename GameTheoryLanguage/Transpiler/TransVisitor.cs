@@ -1,3 +1,4 @@
+using Antlr4.Runtime.Atn;
 using Antlr4.Runtime.Misc;
 
 public class TransVisitor : GtlBaseVisitor<object>
@@ -348,7 +349,106 @@ public class TransVisitor : GtlBaseVisitor<object>
         // No need for type declaration in rust, due to our typechecking prior to transpiling.
         return $"let {context.ID().GetText()} = {Visit(context.expr())}\n";
     }
+    public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
+    {
+        if (context.game_type().GetText().Equals("Moves"))
+        {
+            return "";
+        }
+        string returnString = "";
+        returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
+        returnString += "{\n";
+        if (context.game_type().GetText().Equals("Strategyspace"))
+        {
+            returnString += VisitStrategySpace(context.game_expr().array());
+        }
+        if (context.game_type().GetText().Equals("Strategy"))
+        {
+            returnString += VisitStrategy(context.game_expr().array());
+        }
+        if (context.game_type().GetText().Equals("Players"))
+        {
+            returnString += VisitPlayers(context.game_expr().array());
+        }
+        if (context.game_type().GetText().Equals("Payoff"))
+        {
+            returnString += VisitPayoff(context.game_expr().array());
+        }
+        if (context.game_type().GetText().Equals("Action"))
+        {
+            returnString += Visit(context.game_expr());
+        }
+        returnString += "}\n";
+        return returnString;
+    }
+    public override object VisitAction([NotNull] GtlParser.ActionContext context)
+    {
+        string returnString = "";
+        returnString += "condition: Condition::Expression(BoolExpression {\n";
+        returnString += "b_val: |gmst: &GameState| ";
 
+        returnString += "}),\n";
+        returnString += $"act_move: Moves::{context.move().GetText()},\n";
+        return returnString;
+    }
+    private object VisitStrategySpace([NotNull] GtlParser.ArrayContext context)
+    {
+        string returnString = "";
+        returnString += "matrix: vec![\n";
+        foreach (var type in context.array_type())
+        {
+            foreach (var move in type.tuple().ID())
+            {
+                returnString += $"Moves::{move}, ";
+            }
+            returnString += "\n";
+        }
+        returnString += "],\n";
+        return returnString;
+    }
+    private object VisitStrategy([NotNull] GtlParser.ArrayContext context)
+    {
+        string returnString = "";
+        returnString += "strat: vec![";
+        foreach (var action in context.array_type())
+        {
+            returnString += action.GetText() + ", ";
+        }
+        returnString = returnString.Remove(returnString.Length - 2, 2);
+        returnString += "],\n";
+
+        return returnString;
+    }
+    private object VisitPlayers([NotNull] GtlParser.ArrayContext context)
+    {
+        string returnString = "";
+        returnString += "p1_and_strat: vec![\n";
+        foreach (var player in context.array_type())
+        {
+            returnString += $"(\"{player.player().ID(0)}\".to_string(), {player.player().ID(1)}.clone()),\n";
+        }
+        returnString += "],\n";
+
+        return returnString;
+    }
+    private object VisitPayoff([NotNull] GtlParser.ArrayContext context)
+    {
+        string returnString = "";
+        returnString += "matrix: vec![\n";
+        foreach (var array in context.array_type())
+        {
+            returnString += "vec![";
+            foreach (var payoff in array.game_utility_function().array().array_type())
+            {
+                returnString += payoff.GetText() + ", ";
+            }
+            returnString = returnString.Remove(returnString.Length - 2, 2);
+            returnString += "],\n";
+        }
+        returnString += "],\n";
+
+        return returnString;
+    }
     private void EnterFunctionScope(Scope scope)
     {
         FunctionStack.Push(scope);
