@@ -2,6 +2,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 namespace GameTheoryLanguageTests;
 
+
 [TestClass]
 public class TranspilerTests
 {
@@ -48,10 +49,12 @@ public class TranspilerTests
         string input2 = "real test = 1.5 + 1.6 / 10.0;";
         string input3 = "int test = (-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
         string input4 = "5 MOD 3;";
+
         string output1 = "let test = 1 + 1 * 7;";
         string output2 = "let test = 1.5 + 1.6 / 10.0;";
         string output3 = "let test = (-5 + (4 + 3 * (4 % 5) / 1 + 5) - 3);";
         string output4 = "5 % 3;";
+
         AssertTrue(input1, output1);
         AssertTrue(input2, output2);
         AssertTrue(input3, output3);
@@ -60,49 +63,63 @@ public class TranspilerTests
     [TestMethod]
     public void IfElseTest()
     {
-        string input1 = "if (TRUE) then {int x = 4; x;} else {int y = 5; y;};";
+        string input1 = "if (TRUE) then {int x = 4;} else {int y = 5;};";
         string input2 = "if (TRUE) then {int x = 4; x;} else if (FALSE) then {int y = 5; y;} else {int z = 6; z;};";
         string input3 = "if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 4;} else {int z = 4;};";
+        string input4 = "int x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3;} else {int z = 2;};";
 
         string output1 = "if true {let x = 4;x} else {let y = 5;y};";
         string output2 = "if true {let x = 4;x} else if false {let y = 5;y} else {let z = 6;z};";
         string output3 = "if true {let x = 4;x} else if false {let y = 4;y} else {let z = 4;z};";
+        string output4 = "let x = if true {let x = 4;x} else if false {let y = 3;y} else {let z = 2;z};";
 
-        AssertTrue(input1, output1);
-        AssertTrue(input2, output2);
-        AssertTrue(input3, output3);
+        AssertTrue(input1, output1); // Regular if else statement with assignment to expression return value
+        AssertTrue(input2, output2); // If else if else with return value
+        AssertTrue(input3, output3); // If else if else with with assignment to expression return value
+        AssertTrue(input4, output4); // Variable assignment to if else if else statement
     }
-    /*
+
     [TestMethod]
     public void TestFunctionDeclaration()
     {
         string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;}";
         string input2 = "intFunction : (int x) -> int {if (TRUE) then {5;} else {6;};}";
+        string input3 = "intFunction : (int x) -> int {if (TRUE) then {x;intFunctionNested : (int z) -> int {1;}} else {6;};}";
+        string input4 = "int x = 5; intFunction : (int z) -> int {int q = 3; z; intFunctionNested : (int y) -> int {x + 1;}}";
 
-        string output1 = "fn intFunction : (int x) -> int {let y = x + 10;x - 5}";
-        string output2 = "fn intFunction : (int x) -> int {if true {5} else {6};";
 
-        AssertTrue(input1, output1);
-        AssertTrue(input2, output2);
+        string output1 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}";
+        string output2 = "fn intFunction(x: &i32) -> i32 {if true {5} else {6}}";
+        string output3 = "fn intFunction(x: &i32) -> i32 {if true {fn intFunctionNested(z: &i32) -> i32 {1}*x} else {6}}";
+        string output4 = "let x = 5;fn intFunction(z: &i32) -> i32 {let x = 5;let q = 3;fn intFunctionNested(y: &i32) -> i32 {let x = 5;let q = 3;x + 1}*z}";
+
+        // Also tests conversion to call by reference
+        AssertTrue(input1, output1); // Regular function test
+        AssertTrue(input2, output2); // If else in function
+        AssertTrue(input3, output3); // Nested function
+        AssertTrue(input4, output4); // Nested function with outer scope variables inclusion
     }
-    */
-    /*
+
     [TestMethod]
     public void TestFunctionCall()
     {
         string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5);";
-        string input2 = "int a = 10; intFunction1 : (int x) -> int {int y = x + a * 5; x - 5;} intFunction1(5);";
-        string input3 = "intFunction : (int x) -> int {intFunction2 : (int x) -> int {x + 5;} intFunction2(x);} intFunction(5);";
+        string input2 = "int a = 10; intFunction : (int x) -> int {int y = x + a * 5; x - 5;} intFunction(5);";
+        string input3 = "intFunction : (int x) -> int {intFunctionNested : (int x) -> int {x + 1;} intFunctionNested(x);} intFunction(5);";
+        string input4 = "intFunction : (int x) -> int {int y = x + 10 * 5;} int x = intFunction(5); ";
 
-        string output1 = "fn intFunction : (int x) -> int {let y = x + 10 * 5;x - 5}intFunction(5);";
-        string output2 = "let a = 10;fn intFunction : (int x) -> int {let y = x + a * 5; x - 5}intFunction(5);";
-        string output3 = "fn intFunction : (int x) -> int {fn intFunction2 : (int x) -> int {x + 5}intFunction2(x)}intFunction(5);";
+        string output1 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}intFunction(&5);";
+        string output2 = "let a = 10;fn intFunction(x: &i32) -> i32 {let a = 10;let y = *x + a * 5;*x - 5}intFunction(&5);";
+        string output3 = "fn intFunction(x: &i32) -> i32 {fn intFunctionNested(x: &i32) -> i32 {*x + 1}intFunctionNested(&*x)}intFunction(&5);";
+        string output4 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;y}let x = intFunction(&5);";
 
-        AssertTrue(input1, output1);
-        AssertTrue(input2, output2);
-        AssertTrue(input3, output3);
+        // Also tests conversion to call by reference
+        AssertTrue(input1, output1); // Regular function call
+        AssertTrue(input2, output2); // Function call with outer scope variable
+        AssertTrue(input3, output3); // Function call with nested function
+        AssertTrue(input4, output4); // Function call with assignment
     }
-    */
+
     private void AssertTrue(string input, string expectedOutput)
     {
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(input));
@@ -127,7 +144,7 @@ public class TranspilerTests
         output = output.Remove(0, 10);
         output = output.Remove(output.Length - 1, 1);
         Console.WriteLine("Expected: " + expectedOutput);
-        Console.WriteLine("Recieved: " + output);
+        Console.WriteLine("Received: " + output);
         Assert.IsTrue(output.Equals(expectedOutput));
     }
 }
