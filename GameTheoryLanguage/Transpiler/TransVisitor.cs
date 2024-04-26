@@ -6,7 +6,6 @@ public class TransVisitor : GtlBaseVisitor<object>
     public readonly List<string> Outputfile = new List<string>();
     private Stack<Scope> ScopeStack { get; } = new Stack<Scope>();
     private Stack<Scope> FunctionStack { get; } = new Stack<Scope>();
-
     GtlDictionary GtlDictionary { get; } = new GtlDictionary();
 
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
@@ -315,8 +314,11 @@ public class TransVisitor : GtlBaseVisitor<object>
         // Ensures that the arguments are expressed as addresses due to call by reference
         foreach (var expr in context.expr())
         {
-            retArgCalls += "&" + Visit(expr);
+            retArgCalls += "&(" + Visit(expr) + "), ";
         }
+
+        // Removes the last comma and space
+        retArgCalls = retArgCalls.Remove(retArgCalls.Length - 2, 2);
 
         return retArgCalls;
     }
