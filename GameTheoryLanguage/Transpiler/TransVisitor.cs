@@ -247,7 +247,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         // First we add all missing variables from the outer scope
         foreach (var v in missingVariables)
         {
-            retFnString += "let " + v.Key + "=" + v.Value + ";\n";
+            retFnString += "let " + v.Key + " = " + v.Value + ";\n";
         }
 
         // Adds all other statements of the body
