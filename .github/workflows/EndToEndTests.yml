@@ -1,0 +1,31 @@
+name: EndToEndTests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  end-to-end-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Install ANTLR4
+      uses: siacodelabs/setup-antlr4@v2
+    - name: run ANTLR4
+      run: cd ./GameTheoryLanguage/Parser && antlr4 -Dlanguage=CSharp -visitor -no-listener -o out Gtl.g4
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --filter "FullyQualifiedName=GameTheoryLanguageTests.EndToEndTests.SetupTests"
+    - name: Rust tests
+      run: cd ./GameTheoryLanguageTests/EndToEndTests && cargo test
