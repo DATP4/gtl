@@ -336,6 +336,10 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         return $"-{Visit(context.expr())}";
     }
+    public override object VisitLogicalNotExpr([NotNull] GtlParser.LogicalNotExprContext context)
+    {
+        return $"!{Visit(context.expr())}";
+    }
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
         // Adds a the variable declared to the vtable of the current scope.
