@@ -28,5 +28,9 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test
+    - name: Parser tests
+      run: dotnet test --filter "Classname=GameTheoryLanguageTests.ParserTests"
+    - name: Typechecking tests
+      run: dotnet test --filter "Classname=GameTheoryLanguageTests.TypecheckingTests"
+    - name: Transpiler tests
+      run: dotnet test --filter "Classname=GameTheoryLanguageTests.TranspilerTests"
