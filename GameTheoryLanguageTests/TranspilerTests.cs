@@ -144,7 +144,7 @@ public class TranspilerTests
         string output = File.ReadAllText(path);
         output = output.Replace("\r", "");
         output = output.Replace("\n", "");
-        output = output.Remove(0, 10);
+        output = output.Remove(0, 143);
         output = output.Remove(output.Length - 1, 1);
         Console.WriteLine("Expected: " + expectedOutput);
         Console.WriteLine("Received: " + output);
@@ -157,6 +157,8 @@ class TestVisitor : TransVisitor
     {
         EnterScope(new Scope());
         string retString = null!;
+        Outputfile.Add("mod library;");
+        Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, PayoffMatrix, Players, Strategy, StrategySpace};");
         Outputfile.Add("fn main()\n{");
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())

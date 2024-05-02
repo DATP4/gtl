@@ -12,6 +12,8 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         EnterScope(new Scope());
         string retString = null!;
+        Outputfile.Add("mod library;");
+        Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, PayoffMatrix, Players, Strategy, StrategySpace};");
         Outputfile.Add("fn main()\n{");
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())
@@ -318,7 +320,10 @@ public class TransVisitor : GtlBaseVisitor<object>
         }
 
         // Removes the last comma and space
-        retArgCalls = retArgCalls.Remove(retArgCalls.Length - 2, 2);
+        if (retArgCalls.Length > 0)
+        {
+            retArgCalls = retArgCalls.Remove(retArgCalls.Length - 2, 2);
+        }
 
         return retArgCalls;
     }
