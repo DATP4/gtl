@@ -1,0 +1,10 @@
+gcd : (int a, int b) -> int {
+    if (b == 0) then {
+        a;
+    } else {
+        gcd(b, a MOD b);
+    };
+}
+int a = gcd(10, 5);
+int b = gcd(32131, 3241);
+int c = gcd(1088, 17);
