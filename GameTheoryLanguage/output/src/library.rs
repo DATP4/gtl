@@ -96,24 +96,24 @@ pub struct Strategy {
 
 // Strategy space that is a one-dimensional vector of moves
 #[derive(Clone, Debug)]
-pub struct StrategySpace {
+pub struct Strategyspace {
     pub matrix: Vec<Moves>,
 }
 
 // Payoff matrix that is a two-dimensional vector of integers
 #[derive(Clone, Debug)]
-pub struct PayoffMatrix {
+pub struct Payoff {
     pub matrix: Vec<Vec<i32>>,
 }
 
 // Functions for calculating points and finding the index of a strategy in the strategy space
-impl PayoffMatrix {
+impl Payoff {
     pub fn calc_points(
         &self,
-        stratsp: &StrategySpace,
+        stratsp: &Strategyspace,
         player_moves: Vec<(String, Moves)>,
     ) -> Vec<(String, Moves, i32)> {
-        let index: usize = PayoffMatrix::find_strat_index(&stratsp, player_moves.clone());
+        let index: usize = Payoff::find_strat_index(&stratsp, player_moves.clone());
         let mut player_points: Vec<(String, Moves, i32)> = Vec::new();
         for i in 0..self.matrix.len() {
             player_points.push((
@@ -125,7 +125,7 @@ impl PayoffMatrix {
         player_points
     }
 
-    pub fn find_strat_index(stratsp: &StrategySpace, player_moves: Vec<(String, Moves)>) -> usize {
+    pub fn find_strat_index(stratsp: &Strategyspace, player_moves: Vec<(String, Moves)>) -> usize {
         let numb_of_players: usize = player_moves.len();
 
         for i in (0..stratsp.matrix.len() - numb_of_players).step_by(numb_of_players) {
@@ -157,8 +157,8 @@ impl PayoffMatrix {
 pub struct Game {
     pub players: Players,
     pub game_state: GameState,
-    pub strat_space: StrategySpace,
-    pub pay_matrix: PayoffMatrix,
+    pub strat_space: Strategyspace,
+    pub pay_matrix: Payoff,
 }
 
 // Implementation of the .run() method for the game, which works for the prisoners dilemma.
@@ -200,7 +200,7 @@ impl Game {
                 for pl_i in 0..number_of_players {
                     if i + pl_i >= self.strat_space.matrix.len() - 1 {
                         let non_turn_choices: Vec<(String, Moves)> =
-                            PayoffMatrix::get_player_moves(choices.clone());
+                            Payoff::get_player_moves(choices.clone());
                         let player_points: Vec<(String, Moves, i32)> = self
                             .pay_matrix
                             .calc_points(&self.strat_space, non_turn_choices);

@@ -5,6 +5,7 @@ public class TransVisitor : GtlBaseVisitor<object>
 {
 
     public readonly List<string> Outputfile = new List<string>();
+    public readonly List<string> MovesList = new List<string>();
     private Stack<Scope> ScopeStack { get; } = new Stack<Scope>();
     private Stack<Scope> FunctionStack { get; } = new Stack<Scope>();
     GtlDictionary GtlDictionary { get; } = new GtlDictionary();
@@ -14,8 +15,12 @@ public class TransVisitor : GtlBaseVisitor<object>
         EnterScope(new Scope());
         string retString = null!;
         Outputfile.Add("mod library;");
-        Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, PayoffMatrix, Players, Strategy, StrategySpace};");
+        Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};");
         Outputfile.Add("fn main()\n{");
+        Outputfile.Add("let gmst: GameState = GameState {");
+        Outputfile.Add("turn: 1,");
+        Outputfile.Add("players: Vec::new(),");
+        Outputfile.Add("moves_and_points: Vec::new(), \n};");
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())
         {
@@ -33,6 +38,8 @@ public class TransVisitor : GtlBaseVisitor<object>
         ExitScope();
         return null!;
     }
+
+
 
     public override object VisitStatement([NotNull] GtlParser.StatementContext context)
     {
@@ -91,6 +98,11 @@ public class TransVisitor : GtlBaseVisitor<object>
         string right = (string)Visit(context.expr(1));
         string op = context.op.Text;
         return $"{left} {op} {right}";
+    }
+
+    public override object VisitMemberExpr([NotNull] GtlParser.MemberExprContext context)
+    {
+        return $"{context.GetText()}";
     }
 
     public override object VisitBinaryExpr([NotNull] GtlParser.BinaryExprContext context)
@@ -283,6 +295,32 @@ public class TransVisitor : GtlBaseVisitor<object>
         return retFnString;
     }
 
+    public override object VisitMethod_access([NotNull] GtlParser.Method_accessContext context)
+    {
+        string id = context.ID().GetText();
+        string returnString = "";
+        if (id.Equals("lastMove"))
+        {
+            returnString += GtlDictionary.Translate("Functions", "last_move");
+            returnString += $"({context.arg_def().ID()[0]}.to_string())";
+        }
+        else if (id.Equals("moveAtTurn"))
+        {
+            returnString += GtlDictionary.Translate("Functions", "move_at_turn");
+            returnString += $"({context.arg_def().ID()[0]}.to_string(), {context.arg_def().ID(1)})";
+        }
+        else if (id.Equals("playerScore"))
+        {
+            returnString += GtlDictionary.Translate("Functions", "player_score");
+            returnString += $"({context.arg_def().ID()[0]}.to_string(), {context.arg_def().ID(1)})";
+        }
+        else if (id.Equals("turn"))
+        {
+            returnString += GtlDictionary.Translate("Functions", "turn");
+        }
+        return returnString;
+    }
+
     public override object VisitArg_def([NotNull] GtlParser.Arg_defContext context)
     {
         // Creates arrays of all types and ids in the arguments
@@ -351,13 +389,13 @@ public class TransVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
-        if (context.game_type().GetText().Equals("Moves"))
-        {
-            return "";
-        }
         string returnString = "";
         returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
         returnString += "{\n";
+        if (context.game_type().GetText().Equals("Game"))
+        {
+            returnString += Visit(context.game_expr().game_tuple());
+        }
         if (context.game_type().GetText().Equals("Strategyspace"))
         {
             returnString += VisitStrategySpace(context.game_expr().array());
@@ -378,6 +416,22 @@ public class TransVisitor : GtlBaseVisitor<object>
         {
             returnString += Visit(context.game_expr());
         }
+        if (context.game_type().GetText().Equals("Moves"))
+        {
+            List<string> moves = new List<string>();
+            moves.Add("#[derive(Copy, Clone, Debug, PartialEq)]\n");
+            moves.Add("pub enum Moves {\n");
+            foreach (var move in context.game_expr().array().array_type())
+            {
+                MovesList.Add(move.GetText() + ",\n");
+                moves.Add(move.GetText() + ",\n");
+            }
+            moves.Add("None,\n");
+            moves.Add("}\n");
+            GtlCFile writer = new GtlCFile();
+            writer.PrintMovesToFile(moves);
+            return null!;
+        }
         returnString += "}\n";
         return returnString;
     }
@@ -386,10 +440,27 @@ public class TransVisitor : GtlBaseVisitor<object>
         string returnString = "";
         returnString += "condition: Condition::Expression(BoolExpression {\n";
         returnString += "b_val: |gmst: &GameState| ";
-
+        if (context.expr() == null)
+        {
+            returnString += "true";
+        }
+        else
+        {
+            returnString += (string)Visit(context.expr());
+        }
         returnString += "}),\n";
         returnString += $"act_move: Moves::{context.move().GetText()},\n";
         return returnString;
+    }
+    public override object VisitGame_tuple([NotNull] GtlParser.Game_tupleContext context)
+    {
+        string returnString = "";
+        returnString += "game_state: gmst,\n";
+        returnString += "strat_space: " + context.ID()[0].GetText() + ",\n";
+        returnString += "players: " + context.ID()[1].GetText() + ",\n";
+        returnString += "pay_matrix: " + context.ID()[2].GetText() + ",\n";
+        return returnString;
+
     }
     private object VisitStrategySpace([NotNull] GtlParser.ArrayContext context)
     {
@@ -412,7 +483,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         returnString += "strat: vec![";
         foreach (var action in context.array_type())
         {
-            returnString += action.GetText() + ", ";
+            returnString += action.GetText() + ".clone(), ";
         }
         returnString = returnString.Remove(returnString.Length - 2, 2);
         returnString += "],\n";
@@ -422,7 +493,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     private object VisitPlayers([NotNull] GtlParser.ArrayContext context)
     {
         string returnString = "";
-        returnString += "p1_and_strat: vec![\n";
+        returnString += "pl_and_strat: vec![\n";
         foreach (var player in context.array_type())
         {
             returnString += $"(\"{player.player().ID(0)}\".to_string(), {player.player().ID(1)}.clone()),\n";
@@ -521,4 +592,10 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         return ScopeStack.Peek();
     }
+
+    public bool CheckMovesList(string move)
+    {
+        return MovesList.Contains(move);
+    }
+
 }
