@@ -1,0 +1,43 @@
+Moves t = [a, b, cooperate, deflect];
+
+// Declare actions
+Action a1 = (gamestate.lastMove(str p2) == gamestate.lastMove(str p3)) then a;
+Action a2 = (TRUE) then a;
+Action a3 = (gamestate.turn == 1) then b;
+
+Strategy s1 = [
+    a3,
+    a1
+];
+
+Strategy s2 = [
+    a2
+];
+
+Strategyspace stratspace = [
+    (a, a, a),
+    (a, a, b),
+    (a, b, a),
+    (b, a, a),
+    (a, b, b),
+    (b, a, b),
+    (b, b, a),
+    (b, b, b)
+];
+
+Payoff payoff = [
+    p1 -> [3,4,0,0,0,0,0,0],
+    p2 -> [2,0,4,-1,0,0,0,0],
+    p3 -> [1,2,4,3,0,0,0,0]
+];
+
+
+Players p = [
+    p1 chooses s1,
+    p2 chooses s2,
+    p3 chooses s2
+];
+
+Game prisoners = (stratspace, p, payoff);
+
+prisoners.run(5);

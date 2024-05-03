@@ -18,7 +18,7 @@ public class EndToEndTests
         string workingDirectory = Environment.CurrentDirectory;
         string gtlPath = Directory.GetParent(workingDirectory)!.Parent!.Parent!.FullName;
         string path = gtlPath + "/EndToEndTests/src/main.rs";
-        File.WriteAllText(path, "#[cfg(test)]\nmod tests {\n");
+        File.WriteAllText(path, "mod library;\nuse library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};\n#[cfg(test)]\nmod tests {\nuse super::*;\n");
         Createtests();
         string currentText = File.ReadAllText(path);
         File.WriteAllText(path, currentText + "}");
@@ -37,7 +37,7 @@ public class EndToEndTests
         PlayerDeclarationTest();
         PayoffDeclarationTest();
         StrategySpaceDeclarationTest();
-        GameTupleTest();
+        ProgramTest();
     }
     private void DeclarationTest()
     {
@@ -93,27 +93,33 @@ public class EndToEndTests
     }
     private void ActionDeclarationTest()
     {
-
+        Createtest("Moves t = [a, b, cooperate, deflect]; Action turn = (TRUE) then a;", "assert_eq!(turn.act_move, Moves::a);\nlet Condition::Expression(expr) = turn.condition;\nassert_eq!((expr.b_val)(&gamestate), true)", "action");
+        Createtest("Moves t = [a, b, cooperate, deflect]; Action turn = (gamestate.turn == 1) then a;", "assert_eq!(turn.act_move, Moves::a);\nlet Condition::Expression(expr) = turn.condition;\nassert_eq!((expr.b_val)(&gamestate), true);\ngamestate.turn += 1;\nassert_eq!((expr.b_val)(&gamestate), false);", "action");
     }
     private void StrategyDeclarationTest()
     {
-
+        Createtest("Moves t = [a, b, cooperate, deflect]; Action turn = (TRUE) then a; Strategy strat = [turn];", "assert_eq!(strat.strat[0].act_move, Moves::a)", "strategy");
     }
     private void PlayerDeclarationTest()
     {
-
+        Createtest("Moves t = [a, b, cooperate, deflect]; Action turn = (TRUE) then a; Strategy strat = [turn]; Players p = [p1 chooses strat];", "assert_eq!(p.pl_and_strat[0].1.strat[0].act_move, Moves::a)", "player");
     }
     private void PayoffDeclarationTest()
     {
-
+        Createtest("Payoff p = [p1 -> [1, 2], p2 -> [2, 1]];", "assert_eq!(p.matrix[0][0], 1);\nassert_eq!(p.matrix[0][1], 2);\nassert_eq!(p.matrix[1][0], 2);\nassert_eq!(p.matrix[1][1], 1);", "payoff");
     }
     private void StrategySpaceDeclarationTest()
     {
-
+        Createtest("Moves t = [a, b, cooperate, deflect]; Strategyspace stratspace = [(a, b), (b, a), (a, a), (b, b)];", "assert_eq!(stratspace.matrix[0], Moves::a);\nassert_eq!(stratspace.matrix[1], Moves::b);\nassert_eq!(stratspace.matrix[2], Moves::b);\nassert_eq!(stratspace.matrix[3], Moves::a);\nassert_eq!(stratspace.matrix[4], Moves::a);\nassert_eq!(stratspace.matrix[5], Moves::a);\nassert_eq!(stratspace.matrix[6], Moves::b);\nassert_eq!(stratspace.matrix[7], Moves::b);", "strategyspace");
     }
-    private void GameTupleTest()
+    private void ProgramTest()
     {
-
+        string test1 = Readtest("test1");
+        Createtest(test1, "let p = prisoners.run(5);\nassert_eq!(p.game_state.turn, 6);\nassert_eq!(p.game_state.player_score(\"p1\".to_string()), 17);\nassert_eq!(p.game_state.player_score(\"p2\".to_string()), 1);", "program");
+        string test2 = Readtest("test2");
+        Createtest(test2, "assert_eq!(a, 5);\nassert_eq!(b, 1);\nassert_eq!(c, 17);", "program");
+        string test3 = Readtest("test3");
+        Createtest(test3, "let p = prisoners.run(5);\nassert_eq!(p.game_state.turn, 6);\nassert_eq!(p.game_state.player_score(\"p1\".to_string()), 12);\nassert_eq!(p.game_state.player_score(\"p2\".to_string()), 7);\nassert_eq!(p.game_state.player_score(\"p3\".to_string()), 7);", "program");
     }
     private void Createtest(string input, string output, string testtype)
     {
@@ -133,6 +139,12 @@ public class EndToEndTests
         TestVisitor transvisitor = new TestVisitor();
         _ = transvisitor.Visit(parseTree);
     }
+    private string Readtest(string name)
+    {
+        string workingDirectory = Environment.CurrentDirectory;
+        string path = Directory.GetParent(workingDirectory)!.Parent!.Parent!.FullName;
+        return File.ReadAllText(path + "/EndToEndTests/programtests/" + name + ".gtl");
+    }
     class TestVisitor : TransVisitor
     {
         public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
@@ -145,6 +157,10 @@ public class EndToEndTests
             }
             Outputfile.Add($"#[test]\nfn {Testtype}_test_{Testcounter}()" + "{\n");
             Testcounter += 1;
+            Outputfile.Add("let mut gamestate: GameState = GameState {");
+            Outputfile.Add("turn: 1,");
+            Outputfile.Add("players: Vec::new(),");
+            Outputfile.Add("moves_and_points: Vec::new(), \n};");
             Previoustesttype = Testtype;
             // Program consists of statements only, so we iterate them
             foreach (var stmt in context.statement())
@@ -164,6 +180,11 @@ public class EndToEndTests
             ExitScope();
             return null!;
         }
+        public override void WriteToMoves(List<string> moves)
+        {
+            TestGtlCFile writer = new TestGtlCFile();
+            writer.PrintMovesToFile(moves);
+        }
     }
     class TestGtlCFile
     {
@@ -180,6 +201,15 @@ public class EndToEndTests
             }
             File.WriteAllText(path, currentText);
             //File.Delete(filepath); 
+        }
+        public void PrintMovesToFile(List<string> moves)
+        {
+            string workingDirectory = Environment.CurrentDirectory;
+            string gtlPath = Directory.GetParent(workingDirectory)!.Parent!.Parent!.FullName;
+            string filepath = gtlPath + "/EndToEndTests/src/library/movs.rs";
+            List<string> authors = moves;
+            File.WriteAllText(filepath, "");
+            File.WriteAllLines(filepath, authors);
         }
     }
 }

@@ -128,7 +128,7 @@ impl Payoff {
     pub fn find_strat_index(stratsp: &Strategyspace, player_moves: Vec<(String, Moves)>) -> usize {
         let numb_of_players: usize = player_moves.len();
 
-        for i in (0..stratsp.matrix.len() - i).step_by(numb_of_players) {
+        for i in (0..stratsp.matrix.len() - 1).step_by(numb_of_players) {
             for j in 0..numb_of_players {
                 if stratsp.matrix[j + i] != player_moves[j].1 {
                     break;
@@ -164,7 +164,7 @@ pub struct Game {
 // Implementation of the .run() method for the game, which works for the prisoners dilemma.
 // Dunno if it works with other games
 impl Game {
-    pub fn run(mut self, turns: i32) -> i32 {
+    pub fn run(mut self, turns: i32) -> Game {
         // Add players
         self.game_state.add_players(self.players.clone());
         while self.game_state.turn <= turns {
@@ -226,6 +226,6 @@ impl Game {
                 self.game_state.player_score(pl.to_string())
             );
         }
-        return 0;
+        return self;
     }
 }

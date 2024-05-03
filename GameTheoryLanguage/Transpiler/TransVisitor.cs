@@ -432,8 +432,7 @@ public class TransVisitor : GtlBaseVisitor<object>
             }
             moves.Add("None,\n");
             moves.Add("}\n");
-            GtlCFile writer = new GtlCFile();
-            writer.PrintMovesToFile(moves);
+            WriteToMoves(moves);
             return null!;
         }
         returnString += "}\n";
@@ -600,6 +599,11 @@ public class TransVisitor : GtlBaseVisitor<object>
     public bool CheckMovesList(string move)
     {
         return MovesList.Contains(move);
+    }
+    public virtual void WriteToMoves(List<string> moves)
+    {
+        GtlCFile writer = new GtlCFile();
+        writer.PrintMovesToFile(moves);
     }
 
 }
