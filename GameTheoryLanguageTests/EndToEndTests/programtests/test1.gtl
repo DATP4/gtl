@@ -1,0 +1,40 @@
+Moves t = [a, b, cooperate, deflect];
+
+// Declare actions
+Action turn1Coop = (gamestate.turn == 1) then cooperate;
+Action oppDeflect = (gamestate.lastMove(str p2) == cooperate) then deflect;
+Action oppCooperate = (gamestate.lastMove(str p2) == deflect) then cooperate;
+Action turn = (gamestate.turn == 4) then deflect;
+Action coop = () then cooperate;
+
+Strategy aStrat1 = [
+    turn1Coop,
+    oppDeflect,
+    oppCooperate
+];
+
+Strategy aStrat2 = [
+    coop
+];
+
+Strategyspace stratspace = [
+    (cooperate, cooperate),
+    (deflect, cooperate),
+    (cooperate, deflect),
+    (deflect, deflect)
+];
+
+Payoff payoff = [
+    p1 -> [1,4,0,2],
+    p2 -> [1,0,4,2]
+];
+
+
+Players p = [
+    p1 chooses aStrat1,
+    p2 chooses aStrat2
+];
+
+Game prisoners = (stratspace, p, payoff);
+
+prisoners.run(5);

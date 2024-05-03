@@ -18,7 +18,6 @@ impl GameState {
             moves_and_points: Vec::new(),
         }
     }
-
     fn get_player_index(&self, player: String) -> usize {
         // Initialize arbitrary index
         let mut index: usize = self.players.len();
@@ -54,13 +53,7 @@ impl GameState {
     }
 
     pub fn last_move(&self, player: String) -> Moves {
-        if self.turn == 1{
-            return Moves::None;
-        }
         let index: usize = self.get_player_index(player);
-        if self.moves_and_points.len() == 0 {
-            return Moves::None;
-        }
         *self.moves_and_points[index].0.last().unwrap()
     }
 
@@ -76,9 +69,6 @@ impl GameState {
 
     pub fn player_score(&self, player: String) -> i32 {
         let index = self.get_player_index(player);
-        if self.moves_and_points.len() == 0 {
-            return 0;
-        }
         *self.moves_and_points[index].1.last().unwrap()
     }
 }
@@ -145,7 +135,7 @@ impl Payoff {
     pub fn find_strat_index(stratsp: &Strategyspace, player_moves: Vec<(String, Moves)>) -> usize {
         let numb_of_players: usize = player_moves.len();
 
-        for i in (0..stratsp.matrix.len() - i).step_by(numb_of_players) {
+        for i in (0..stratsp.matrix.len() - 1).step_by(numb_of_players) {
             for j in 0..numb_of_players {
                 if stratsp.matrix[j + i] != player_moves[j].1 {
                     break;
@@ -181,7 +171,7 @@ pub struct Game {
 // Implementation of the .run() method for the game, which works for the prisoners dilemma.
 // Dunno if it works with other games
 impl Game {
-    pub fn run(mut self, turns: i32) -> i32 {
+    pub fn run(mut self, turns: i32) -> Game {
         // Add players
         self.game_state.add_players(self.players.clone());
         while self.game_state.turn <= turns {
@@ -213,9 +203,25 @@ impl Game {
 
             // Check stratspace and player moves to get payoff
             let number_of_players = self.players.pl_and_strat.len();
-            let player_moves = Payoff::get_player_moves(choices.clone());
-            let player_points = self.pay_matrix.calc_points(&self.strat_space, player_moves);
-            self.game_state.add_points_and_moves_to_player(player_points);
+            for i in (0..self.strat_space.matrix.len()).step_by(number_of_players) {
+                for pl_i in 0..number_of_players {
+                    if i + pl_i >= self.strat_space.matrix.len() - 1 {
+                        let non_turn_choices: Vec<(String, Moves)> =
+                            Payoff::get_player_moves(choices.clone());
+                        let player_points: Vec<(String, Moves, i32)> = self
+                            .pay_matrix
+                            .calc_points(&self.strat_space, non_turn_choices);
+                        self.game_state
+                            .add_points_and_moves_to_player(player_points);
+                        break;
+                    }
+                    let player_move = choices[pl_i].1.last().unwrap().0;
+                    let strat_space_move = self.strat_space.matrix[i + pl_i];
+                    if player_move == strat_space_move {
+                        continue;
+                    }
+                }
+            }
 
             self.game_state.turn += 1;
         }
@@ -227,6 +233,6 @@ impl Game {
                 self.game_state.player_score(pl.to_string())
             );
         }
-        return 0;
+        return self;
     }
 }
