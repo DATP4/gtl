@@ -283,6 +283,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         Console.WriteLine("Visiting boolean expr");
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
+        Console.WriteLine("Left: " + left);
         string op = context.op.Text;
         if (left.Equals("bool") && right.Equals("bool") &&
         (op == "==" || op == "!=" || op == "&&" || op == "||" || op == "^^"))
@@ -475,8 +476,23 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
             ScopeStack.Peek().AddVariable(id, type);
         }
-        return base.VisitArg_def(context);
+        return null!;
     }
+
+    public override object VisitMethod_access([NotNull] GtlParser.Method_accessContext context)
+    {
+        Console.WriteLine("Visiting method access");
+        string id = context.ID().GetText();
+        return id switch
+        {
+            "lastMove" => "move",
+            "turn" => "int",
+            "moveAtTurn" => "move",
+            "playerScore" => "int",
+            _ => throw new NotSupportedException($"Method {id} not found"),
+        };
+    }
+
     public override object VisitPlayer([NotNull] GtlParser.PlayerContext context)
     {
         Console.WriteLine("Visiting player");

@@ -17,6 +17,12 @@ public class GtlDictionary
             {"int", "i32"},
             {"real", "f32"},
             {"bool", "bool"}
+       }},
+       {"Functions", new Dictionary<string, string>(){
+            {"last_move", "GameState::last_move"},
+            {"move_at_turn", "GameState::move_at_turn"},
+            {"player_score", "GameState::player_score"},
+            {"turn", "gmst.turn"}
        }}
     };
 

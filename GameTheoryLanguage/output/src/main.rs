@@ -1,192 +1,87 @@
 mod library;
-use library::{Action, BoolExpression, Condition, Game, GameState, Moves, PayoffMatrix, Players, Strategy, StrategySpace};
-
-
+use library::{
+    Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy,
+    Strategyspace,
+};
 fn main() {
-    // ----------------- Game setup -----------------
     let gmst: GameState = GameState {
         turn: 1,
         players: Vec::new(),
         moves_and_points: Vec::new(),
     };
-
-    let turn_1: Action = Action {
+    let someVar = 3;
+    let x = 5;
+    fn intFunction(aVar: &i32) -> i32 {
+        let someVar = 3;
+        let x = 5;
+        let y = x + 10 * 5;
+        if x < 10 * 5 {
+            let z = 10 / 5;
+            z
+        } else if x == 10 {
+            x % 2
+        } else {
+            let z = 10 * 5;
+            z
+        };
+        x - 5
+    }
+    intFunction(&(someVar));
+    fn boolFunction() -> bool {
+        let someVar = 3;
+        let x = 5;
+        true
+    }
+    let a = boolFunction();
+    let oppDeflect: Action = Action {
         condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| gmst.turn == 1,
+            b_val: |gmst: &GameState| GameState::last_move(p2.to_string()) == cooperate,
         }),
-        act_move: Moves::Cooperate,
+        act_move: Moves::deflect,
     };
-
-    let opp_deflect: Action = Action {
+    let oppCooperate: Action = Action {
         condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| { GameState::last_move(gmst, "player3".to_string()) == Moves::Deflect
-            },
+            b_val: |gmst: &GameState| GameState::last_move(p2.to_string()) == deflect,
         }),
-        act_move: Moves::Deflect,
+        act_move: Moves::cooperate,
     };
-
-    let opp_coop: Action = Action {
+    let turn: Action = Action {
         condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| { GameState::last_move(gmst, "player3".to_string()) == Moves::Cooperate
-            },
+            b_val: |gmst: &GameState| gamestate.turn == 4,
         }),
-        act_move: Moves::Cooperate,
+        act_move: Moves::deflect,
     };
-
-    let player1_strat: Strategy = Strategy {
-        strat: vec![turn_1, opp_deflect, opp_coop],
+    let aStrat1: Strategy = Strategy {
+        strat: vec![oppDeflect.clone(), oppCooperate.clone(), turn.clone()],
     };
-
-    let even_turn_deflect: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| gmst.turn % 2 != 0,
-        }),
-        act_move: Moves::Deflect,
+    let aStrat2: Strategy = Strategy {
+        strat: vec![turn.clone()],
     };
-
-    let odd_turn_coop: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| gmst.turn % 2 == 0,
-        }),
-        act_move: Moves::Cooperate,
-    };
-
-    let player2_strat: Strategy = Strategy {
-        strat: vec![even_turn_deflect, odd_turn_coop],
-    };
-
-    let turn_less_5_coop: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| gmst.turn < 5,
-        }),
-        act_move: Moves::Cooperate,
-    };
-
-    let turn_over_5_deflect: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| gmst.turn >= 5,
-        }),
-        act_move: Moves::Deflect,
-    };
-
-    let player3_strat: Strategy = Strategy {
-        strat: vec![turn_less_5_coop, turn_over_5_deflect],
-    };
-
-    let opp_turn_5_deflect_deflect: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |gmst: &GameState| { GameState::move_at_turn(gmst, "player3".to_string(), 5)  == Moves::Deflect
-            },
-        }),
-        act_move: Moves::Deflect,
-    };
-
-    let always_true_coop: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |_gmst: &GameState| true,
-        }),
-        act_move: Moves::Cooperate,
-    };
-
-    let player4_strat: Strategy = Strategy {
-        strat: vec![opp_turn_5_deflect_deflect, always_true_coop],
-    };
-
-    let payoff_matrix: PayoffMatrix = PayoffMatrix {
+    let stratspace: Strategyspace = Strategyspace {
         matrix: vec![
-            vec![2, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 4, 3, 4, 4, 8],
-            vec![2, 0, 0, 0, 8, 4, 4, 3, 1, 3, 3, 4, 0, 0, 0, 0],
-            vec![2, 0, 8, 4, 0, 0, 4, 3, 1, 3, 0, 0, 3, 4, 0, 0],
-            vec![2, 8, 0, 4, 0, 4, 0, 3, 1, 0, 3, 0, 3, 0, 4, 0],
+            Moves::cooperate,
+            Moves::cooperate,
+            Moves::deflect,
+            Moves::cooperate,
+            Moves::cooperate,
+            Moves::deflect,
+            Moves::deflect,
+            Moves::deflect,
         ],
     };
-
-    let strat_space: StrategySpace = StrategySpace {
-        matrix: vec![
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Deflect,
-            Moves::Deflect,
-            Moves::Cooperate,
-            Moves::Cooperate,
-            Moves::Cooperate,
-        ],
+    let payoff: Payoff = Payoff {
+        matrix: vec![vec![1, 4, 0, 2], vec![1, 0, 4, 2]],
     };
-
-    let player_array: Players = Players {
+    let p: Players = Players {
         pl_and_strat: vec![
-            ("player1".to_string(), player1_strat.clone()),
-            ("player2".to_string(), player2_strat.clone()),
-            ("player3".to_string(), player3_strat.clone()),
-            ("player4".to_string(), player4_strat.clone()),
+            ("p1".to_string(), aStrat1.clone()),
+            ("p2".to_string(), aStrat2.clone()),
         ],
     };
-
-    
-
-    let game: Game = Game {
-        players: player_array,
+    let prisoners: Game = Game {
         game_state: gmst,
-        strat_space: strat_space,
-        pay_matrix: payoff_matrix,
+        strat_space: stratspace,
+        players: p,
+        pay_matrix: payoff,
     };
-
-    game.run(10);
 }

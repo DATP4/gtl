@@ -24,6 +24,7 @@ expr
     | literal                           # LiteralExpr
     | ID                                # IdExpr
     | ID '(' arg_call ')'               # ArgCallExpr
+    | ID (method_access)+               # MethodCallExpr
     | ID (member_access)+               # MemberExpr
     | ifElse                            # IfElseExpr
     | expr op=('*' | '/' | MOD) expr    # BinaryExpr
@@ -75,7 +76,7 @@ else
 
 // Argument definitions
 arg_def
-    : ((type ID) (',' type ID)*)?
+    : (type ID (',' type ID)*)?
     ;
 
 arg_call
@@ -99,6 +100,10 @@ tuple
 
 member_access
     : '.' ID
+    ;
+
+method_access
+    : '.' ID '(' arg_def ')'
     ;
 
 // Game theory specific grammar
@@ -142,6 +147,7 @@ type
     : T_INT
     | T_REAL
     | T_BOOL
+    | T_STRING
     ;
 
 game_type
@@ -158,6 +164,7 @@ game_type
 T_INT   : 'int';
 T_REAL  : 'real';
 T_BOOL  : 'bool';
+T_STRING: 'str';
 
 T_GAME    : 'Game';
 T_MOVES   : 'Moves';
