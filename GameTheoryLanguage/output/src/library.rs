@@ -19,45 +19,57 @@ impl GameState {
         }
     }
 
-    fn get_player_index(&self, player: String) -> usize {
-        // Initialize arbitrary index
-        let mut index: usize = self.players.len();
-        for i in 0..self.players.len() {
-            if self.players[i] == player {
-                index = i;
-                break;
-            }
+    fn get_player_index(&self, player: String, index: &usize) -> usize {
+        if self.players[*index] == player {
+            return *index;
         }
-        if index == self.players.len() {
+        if *index == self.players.len() {
             panic!("Player not found in game state");
         }
-        index
+
+        self.get_player_index(player, &(index + 1))
     }
 
-    pub fn add_players(&mut self, plays: Players) {
-        for pl in plays.pl_and_strat.iter() {
-            self.players.push(pl.0.clone());
+    pub fn add_players(&mut self, plays: Players, index: &usize) {
+        if *index == plays.pl_and_strat.len() {
+            return;
         }
+        self.players.push(plays.pl_and_strat[*index].0.clone());
+        self.add_players(plays, &(index + 1));
     }
 
-    pub fn add_points_and_moves_to_player(&mut self, player_points: Vec<(String, Moves, i32)>) {
-        for pl in player_points.iter() {
-            if self.turn == 1 {
-                self.moves_and_points.push((vec![pl.1], vec![pl.2]));
-            } else {
-                let index: usize = self.get_player_index(pl.0.clone());
-                let last_score: i32 = *self.moves_and_points[index].1.last().unwrap();
-                self.moves_and_points[index].0.push(pl.1);
-                self.moves_and_points[index].1.push(pl.2 + last_score);
-            }
+    pub fn add_points_and_moves_to_player(
+        &mut self,
+        player_points: Vec<(String, Moves, i32)>,
+        index: &usize,
+    ) {
+        if player_points.len() == *index {
+            return;
         }
+
+        if self.turn == 1 {
+            self.moves_and_points
+                .push((vec![player_points[*index].1], vec![player_points[*index].2]));
+        } else {
+            let player_index: usize =
+                self.get_player_index(player_points[*index].0.clone(), &mut 0);
+            let last_score: i32 = *self.moves_and_points[*index].1.last().unwrap();
+            self.moves_and_points[player_index]
+                .0
+                .push(player_points[*index].1);
+            self.moves_and_points[player_index]
+                .1
+                .push(player_points[*index].2 + last_score);
+        }
+
+        self.add_points_and_moves_to_player(player_points, &(index + 1));
     }
 
     pub fn last_move(&self, player: String) -> Moves {
-        if self.turn == 1{
+        if self.turn == 1 {
             return Moves::None;
         }
-        let index: usize = self.get_player_index(player);
+        let index: usize = self.get_player_index(player, &mut 0);
         if self.moves_and_points.len() == 0 {
             return Moves::None;
         }
@@ -65,7 +77,7 @@ impl GameState {
     }
 
     pub fn move_at_turn(&self, player: String, turn: i32) -> Moves {
-        let index: usize = self.get_player_index(player);
+        let index: usize = self.get_player_index(player, &mut 0);
         let i_turn: usize = turn as usize;
         if i_turn >= self.turn as usize {
             Moves::None
@@ -75,7 +87,7 @@ impl GameState {
     }
 
     pub fn player_score(&self, player: String) -> i32 {
-        let index = self.get_player_index(player);
+        let index = self.get_player_index(player, &mut 0);
         if self.moves_and_points.len() == 0 {
             return 0;
         }
@@ -129,43 +141,73 @@ impl Payoff {
         &self,
         stratsp: &Strategyspace,
         player_moves: Vec<(String, Moves)>,
-    ) -> Vec<(String, Moves, i32)> {
-        let index: usize = Payoff::find_strat_index(&stratsp, player_moves.clone());
-        let mut player_points: Vec<(String, Moves, i32)> = Vec::new();
-        for i in 0..self.matrix.len() {
-            player_points.push((
-                player_moves[i].0.clone(),
-                player_moves[i].1.clone(),
-                self.matrix[i][index],
-            ));
+        player_points: &mut Vec<(String, Moves, i32)>,
+        index: &usize,
+    ) {
+        if self.matrix.len() == *index {
+            return;
         }
-        player_points
+        let strat_index: usize =
+            Payoff::find_strat_index(&self, &stratsp, player_moves.clone(), &mut 0);
+        player_points.push((
+            (player_moves[*index].0.clone()).to_string(),
+            (player_moves[*index].1.clone()),
+            self.matrix[*index][strat_index],
+        ));
+        self.calc_points(&stratsp, player_moves, player_points, &(index + 1));
     }
 
-    pub fn find_strat_index(stratsp: &Strategyspace, player_moves: Vec<(String, Moves)>) -> usize {
+    pub fn find_strat_index(
+        &self,
+        stratsp: &Strategyspace,
+        player_moves: Vec<(String, Moves)>,
+        index: &usize,
+    ) -> usize {
+        if stratsp.matrix.len() == *index {
+            panic!("No index corresponding to player moves found, in find_strat_index()");
+        }
+
         let numb_of_players: usize = player_moves.len();
 
-        for i in (0..stratsp.matrix.len() - i).step_by(numb_of_players) {
-            for j in 0..numb_of_players {
-                if stratsp.matrix[j + i] != player_moves[j].1 {
-                    break;
-                }
-                if j == numb_of_players - 1 {
-                    return i / numb_of_players;
-                }
-            }
+        let inner_index: usize =
+            Self::find_strat_index_helper(&self, stratsp, player_moves.clone(), index, &0);
+        if inner_index == numb_of_players {
+            return *index / numb_of_players;
         }
-        Err(String::from("No index corresponding to player moves found")).unwrap()
+        Self::find_strat_index(&self, stratsp, player_moves, &(index + numb_of_players))
+    }
+
+    pub fn find_strat_index_helper(
+        &self,
+        stratsp: &Strategyspace,
+        player_moves: Vec<(String, Moves)>,
+        outer_index: &usize,
+        inner_index: &usize,
+    ) -> usize {
+        let numb_of_players: usize = player_moves.len();
+        if numb_of_players == *inner_index {
+            return *inner_index;
+        }
+        if stratsp.matrix[*outer_index + *inner_index] != player_moves[*inner_index].1 {
+            return 0;
+        }
+        self.find_strat_index_helper(stratsp, player_moves, outer_index, &(inner_index + 1))
     }
 
     pub fn get_player_moves(
         player_moves: Vec<(String, Vec<(Moves, i32)>)>,
-    ) -> Vec<(String, Moves)> {
-        let mut player_moves_vec: Vec<(String, Moves)> = Vec::new();
-        for pl in player_moves.iter() {
-            player_moves_vec.push((pl.0.clone(), pl.1.last().unwrap().0));
+        return_moves: &mut Vec<(String, Moves)>,
+        index: &usize,
+    ) {
+        if player_moves.len() == *index {
+            return;
         }
-        player_moves_vec
+        return_moves.push((
+            player_moves[*index].0.clone(),
+            player_moves[*index].1.last().unwrap().0,
+        ));
+
+        Self::get_player_moves(player_moves, return_moves, &(index + 1));
     }
 }
 
@@ -181,52 +223,109 @@ pub struct Game {
 // Implementation of the .run() method for the game, which works for the prisoners dilemma.
 // Dunno if it works with other games
 impl Game {
-    pub fn run(mut self, turns: i32) -> i32 {
+    pub fn run(gm: &mut Game, turns: &i32) {
         // Add players
-        self.game_state.add_players(self.players.clone());
-        while self.game_state.turn <= turns {
+        gm.game_state.add_players(gm.players.clone(), &mut 0);
 
-            let mut choices: Vec<(String, Vec<(Moves, i32)>)> = Vec::new();
+        gm.run_game(&turns);
 
-            for player in self.players.pl_and_strat.iter() {
-                for action in player.1.strat.iter() {
-                    // check if the player already has a move in choices
-                    let mut player_has_move: bool = false;
-                    for pl in choices.iter() {
-                        if pl.0.to_string() == player.0.to_string() {
-                            player_has_move = true;
-                            break;
-                        }
-                    }
-                    if player_has_move {
-                        break;
-                    }
+        gm.printS_scores(&mut 0);
+    }
 
-                    let Condition::Expression(expr) = action.condition;
-                    if (expr.b_val)(&self.game_state) {
-                        let move_and_turn = vec![(action.act_move, self.game_state.turn)];
-                        choices.push((player.0.to_string(), move_and_turn));
-                        break;
-                    }
-                }
-            }
-
-            // Check stratspace and player moves to get payoff
-            let number_of_players = self.players.pl_and_strat.len();
-            let player_moves = Payoff::get_player_moves(choices.clone());
-            let player_points = self.pay_matrix.calc_points(&self.strat_space, player_moves);
-            self.game_state.add_points_and_moves_to_player(player_points);
-
-            self.game_state.turn += 1;
+    pub fn run_game(&mut self, turns: &i32) {
+        if *turns == 0 {
+            return;
         }
-        // print final scores
-        for pl in self.game_state.players.iter() {
-            println!(
-                "Player: {}, Score: {}",
-                pl,
-                self.game_state.player_score(pl.to_string())
-            );
+
+        let mut choices: Vec<(String, Vec<(Moves, i32)>)> = Vec::new();
+
+        self.find_moves(self, &mut choices, &mut 0);
+
+        // Check stratspace and player moves to get payoff
+        let number_of_players = self.players.pl_and_strat.len();
+        let mut player_moves: Vec<(String, Moves)> = Vec::new();
+        Payoff::get_player_moves(choices.clone(), &mut player_moves, &mut 0);
+        let mut player_points: Vec<(String, Moves, i32)> = Vec::new();
+        self.pay_matrix
+            .calc_points(&self.strat_space, player_moves, &mut player_points, &mut 0);
+        self.game_state
+            .add_points_and_moves_to_player(player_points, &mut 0);
+
+        self.game_state.turn += 1;
+
+        self.run_game(&(turns - 1));
+    }
+
+    pub fn find_moves(
+        &self,
+        gm: &Game,
+        choices: &mut Vec<(String, Vec<(Moves, i32)>)>,
+        index: &usize,
+    ) {
+        if gm.players.pl_and_strat.len() == *index {
+            return;
         }
-        return 0;
+
+        self.find_moves_helper(gm, choices, index, &0);
+
+        self.find_moves(gm, choices, &(index + 1));
+    }
+
+    pub fn find_moves_helper(
+        &self,
+        gm: &Game,
+        choices: &mut Vec<(String, Vec<(Moves, i32)>)>,
+        outer_index: &usize,
+        inner_index: &usize,
+    ) {
+        // check if the player already has a move in choices
+        if self.check_made_move(gm, choices, outer_index, &mut 0) {
+            return;
+        }
+
+        let player = &self.players.pl_and_strat[*outer_index];
+        let action = &player.1.strat[*inner_index];
+        let Condition::Expression(expr) = action.condition;
+        if (expr.b_val)(&gm.game_state) {
+            let move_and_turn = vec![(action.act_move, gm.game_state.turn)];
+            choices.push((player.0.to_string(), move_and_turn));
+        }
+
+        self.find_moves_helper(gm, choices, outer_index, &(inner_index + 1));
+    }
+
+    pub fn check_made_move(
+        &self,
+        gm: &Game,
+        choices: &Vec<(String, Vec<(Moves, i32)>)>,
+        outer_index: &usize,
+        inner_index: &usize,
+    ) -> bool {
+        if choices.len() == *inner_index {
+            return false;
+        }
+        if choices[*inner_index].0.to_string()
+            == self.players.pl_and_strat[*outer_index].0.to_string()
+        {
+            return true;
+        }
+
+        self.check_made_move(gm, choices, outer_index, &(inner_index + 1))
+    }
+
+    // Prints the players and their scores in self.game_state.players using recursion
+    pub fn printS_scores(&self, index: &usize) {
+        if *index == self.game_state.players.len() {
+            return;
+        }
+
+        println!(
+            "Player: {} has score: {}",
+            self.game_state.players[*index],
+            self.game_state
+                .player_score(self.game_state.players[*index].clone())
+        );
+
+        self.printS_scores(&(index + 1));
     }
 }

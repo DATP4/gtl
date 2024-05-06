@@ -2,10 +2,6 @@
 
 pub enum Moves {
 
-a,
-
-b,
-
 cooperate,
 
 deflect,

@@ -295,13 +295,13 @@ public class TypecheckingTests
     [TestMethod]
     public void TestGameTuple()
     {
-        string input1 = "Moves t = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); g.run(10);";
+        string input1 = "Moves t = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); run(g, 10);";
         string input2 = "Game g = (stratspace, p, payoff);";
         string input3 = "Moves t = [move]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff);";
         string input4 = "Moves t = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff);";
         string input5 = "Moves t = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Game g = (stratspace, p, payoff);";
-        string input6 = "Moves t = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); g.run(TRUE);";
-        string input7 = "int x = 5; x.run(10);";
+        string input6 = "Moves t = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); run(g, TRUE);";
+        string input7 = "int x = 5; run(x, 10);";
 
 
         AssertTrue(input1);

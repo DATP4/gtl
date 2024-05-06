@@ -37,4 +37,4 @@ Players p = [
 
 Game prisoners = (stratspace, p, payoff);
 
-prisoners.run(5);
+run(prisoners, 5);
