@@ -17,7 +17,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         Outputfile.Add("mod library;");
         Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};");
         Outputfile.Add("fn main()\n{");
-        Outputfile.Add("let gmst: GameState = GameState {");
+        Outputfile.Add("let gamestate: GameState = GameState {");
         Outputfile.Add("turn: 1,");
         Outputfile.Add("players: Vec::new(),");
         Outputfile.Add("moves_and_points: Vec::new(), \n};");
@@ -88,6 +88,10 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitIdExpr([NotNull] GtlParser.IdExprContext context)
     {
+        if (CheckMovesList(context.ID().GetText() + ",\n"))
+        {
+            return $"Moves::{context.ID().GetText()}";
+        }
         return IfFunctionArgumentDereference(context.ID().GetText());
     }
 
@@ -302,17 +306,17 @@ public class TransVisitor : GtlBaseVisitor<object>
         if (id.Equals("lastMove"))
         {
             returnString += GtlDictionary.Translate("Functions", "last_move");
-            returnString += $"({context.arg_def().ID()[0]}.to_string())";
+            returnString += $"(&gamestate, \"{context.arg_def().ID()[0]}\".to_string())";
         }
         else if (id.Equals("moveAtTurn"))
         {
             returnString += GtlDictionary.Translate("Functions", "move_at_turn");
-            returnString += $"({context.arg_def().ID()[0]}.to_string(), {context.arg_def().ID(1)})";
+            returnString += $"(&gamestate, \"{context.arg_def().ID()[0]}\".to_string(), {context.arg_def().ID(1)})";
         }
         else if (id.Equals("playerScore"))
         {
             returnString += GtlDictionary.Translate("Functions", "player_score");
-            returnString += $"({context.arg_def().ID()[0]}.to_string(), {context.arg_def().ID(1)})";
+            returnString += $"(&gamestate, \"{context.arg_def().ID()[0]}\".to_string(), {context.arg_def().ID(1)})";
         }
         else if (id.Equals("turn"))
         {
@@ -439,7 +443,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         string returnString = "";
         returnString += "condition: Condition::Expression(BoolExpression {\n";
-        returnString += "b_val: |gmst: &GameState| ";
+        returnString += "b_val: |gamestate: &GameState| ";
         if (context.expr() == null)
         {
             returnString += "true";
@@ -455,7 +459,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitGame_tuple([NotNull] GtlParser.Game_tupleContext context)
     {
         string returnString = "";
-        returnString += "game_state: gmst,\n";
+        returnString += "game_state: gamestate,\n";
         returnString += "strat_space: " + context.ID()[0].GetText() + ",\n";
         returnString += "players: " + context.ID()[1].GetText() + ",\n";
         returnString += "pay_matrix: " + context.ID()[2].GetText() + ",\n";

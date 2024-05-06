@@ -26,34 +26,32 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitStatement([NotNull] GtlParser.StatementContext context)
     {
-        Console.WriteLine("Visiting statement");
+        // Visit each statement indiviually and type checks it
         _ = base.VisitStatement(context);
         return null!;
     }
 
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
-        Console.WriteLine("Visiting declaration");
+        // Check if the type declaration and the type of the value matches
+        // and if the variable is already declared, otherwise adding it to the variable table
         string type = context.type().GetText();
-        string variable = context.ID().GetText();
+        string variableID = context.ID().GetText();
         string valueType = (string)Visit(context.expr());
         if (!type.Equals(valueType))
         {
             throw new DeclarationException(type, valueType);
         }
-        if (ScopeStack.Peek().VtableContains(variable))
+        if (ScopeStack.Peek().VtableContains(variableID))
         {
-            throw new DeclarationException($"Variable {variable} already exists");
+            throw new DeclarationException($"Variable {variableID} already exists");
         }
-        ScopeStack.Peek().AddVariable(variable, type);
+        ScopeStack.Peek().AddVariable(variableID, type);
         return type;
     }
     public override object VisitFunction([NotNull] GtlParser.FunctionContext context)
     {
-        //check ftable, if it exists check input type against expected type and return functions return type, else add to ftable
-        Console.WriteLine("Visiting function");
-
-
+        // 
         string functionId = context.ID().GetText();
         GtlParser.TypeContext[] typeContext = context.arg_def().type();
         string[] stringArray = [];
