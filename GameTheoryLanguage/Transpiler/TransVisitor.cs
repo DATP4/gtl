@@ -17,10 +17,9 @@ public class TransVisitor : GtlBaseVisitor<object>
         Outputfile.Add("mod library;");
         Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};");
         Outputfile.Add("fn main()\n{");
-        Outputfile.Add("let gamestate: GameState = GameState {");
-        Outputfile.Add("turn: 1,");
-        Outputfile.Add("players: Vec::new(),");
-        Outputfile.Add("moves_and_points: Vec::new(), \n};");
+
+        Outputfile.Add("let gamestate: GameState = GameState::new();");
+
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())
         {
@@ -351,6 +350,11 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         // Follows the format of how we call a function with arguments
         return $"{context.ID().GetText()}({Visit(context.arg_call())})";
+    }
+
+    public override object VisitGame_functions([NotNull] GtlParser.Game_functionsContext context)
+    {
+        return context.GetText();
     }
 
     public override object VisitArg_call([NotNull] GtlParser.Arg_callContext context)

@@ -2,11 +2,7 @@ mod library;
 use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};
 fn main()
 {
-let gamestate: GameState = GameState {
-turn: 1,
-players: Vec::new(),
-moves_and_points: Vec::new(), 
-};
+let gamestate: GameState = Gamestate::new();
 let someVar = 3
 ;
 let x = 5
