@@ -184,9 +184,9 @@ public class ParserTests
     [TestMethod]
     public void RunTest()
     {
-        string input1 = "game.run(10);";
-        string input2 = "game.run(x);";
-        string input3 = "game.run(10;";
+        string input1 = "run(game, 10);";
+        string input2 = "run(game, x);";
+        string input3 = "run(game, 10;";
 
         AssertTrue(input1);
         AssertTrue(input2);

@@ -14,6 +14,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         EnterScope(new Scope());
         string retString = null!;
+        Outputfile.Add("#![allow(warnings)]");
         Outputfile.Add("mod library;");
         Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};");
         Outputfile.Add("fn main()\n{");
@@ -120,7 +121,7 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitIfElse([NotNull] GtlParser.IfElseContext context)
     {
-        // Placeholder to check if the last statement is a declaration
+        // Placeholder to check if the  statement is a declaration
         GtlParser.StatementContext lastStmt = null!;
         // Beginning of if
         string retIfString = $"if {Visit(context.expr())} {'{'}\n";
@@ -354,7 +355,12 @@ public class TransVisitor : GtlBaseVisitor<object>
 
     public override object VisitGame_functions([NotNull] GtlParser.Game_functionsContext context)
     {
-        return context.GetText();
+        string returnString = "";
+        returnString += "Game::run(&mut ";
+        returnString += $"{context.ID().GetText()}, ";
+        string val = (string)Visit(context.expr());
+        returnString += "&mut " + val + ")";
+        return returnString;
     }
 
     public override object VisitArg_call([NotNull] GtlParser.Arg_callContext context)
@@ -398,12 +404,17 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
         string returnString = "";
-        returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
-        returnString += "{\n";
         if (context.game_type().GetText().Equals("Game"))
         {
+            returnString += $"let mut {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
+            returnString += "{\n";
             returnString += Visit(context.game_expr().game_tuple());
+            returnString += "}\n";
+            return returnString;
         }
+        returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
+        returnString += "{\n";
+
         if (context.game_type().GetText().Equals("Strategyspace"))
         {
             returnString += VisitStrategySpace(context.game_expr().array());

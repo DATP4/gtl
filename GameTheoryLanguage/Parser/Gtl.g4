@@ -139,7 +139,7 @@ move
     ;
 
 game_functions
-    : ID '.' RUN '(' expr ')'
+    : RUN '(' ID',' expr ')'
     ;
 
 // Types

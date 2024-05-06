@@ -312,12 +312,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new WrongTypeException("Game function", "Game", gametype);
         }
-        string exprtype = (string)Visit(context.expr());
-        if (!exprtype.Equals("int"))
+        string turnsType = (string)Visit(context.expr());
+        if (!turnsType.Equals("int"))
         {
-            throw new WrongTypeException("Game function", "int", exprtype);
+            throw new WrongTypeException("Game function", "int", turnsType);
         }
-        return base.VisitGame_functions(context);
+        return null!;
     }
     public override object VisitMemberExpr(GtlParser.MemberExprContext context)
     {

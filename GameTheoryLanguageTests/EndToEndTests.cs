@@ -18,7 +18,7 @@ public class EndToEndTests
         string workingDirectory = Environment.CurrentDirectory;
         string gtlPath = Directory.GetParent(workingDirectory)!.Parent!.Parent!.FullName;
         string path = gtlPath + "/EndToEndTests/src/main.rs";
-        File.WriteAllText(path, "mod library;\nuse library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};\n#[cfg(test)]\nmod tests {\nuse super::*;\n");
+        File.WriteAllText(path, "#![allow(warnings)]\n mod library;\nuse library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};\n#[cfg(test)]\nmod tests {\nuse super::*;\n");
         Createtests();
         string currentText = File.ReadAllText(path);
         File.WriteAllText(path, currentText + "}");
@@ -179,7 +179,12 @@ public class EndToEndTests
         }
         public override object VisitGame_functions([NotNull] GtlParser.Game_functionsContext context)
         {
-            return "let finishedgame = " + context.GetText();
+            string returnString = "let finishedgame = ";
+            returnString += "Game::run(&mut ";
+            returnString += $"{context.ID().GetText()}, ";
+            string val = (string)Visit(context.expr());
+            returnString += "&mut " + val + ")";
+            return returnString;
         }
         public override void WriteToMoves(List<string> moves)
         {
