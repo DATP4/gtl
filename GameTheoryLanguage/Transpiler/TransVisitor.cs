@@ -17,7 +17,9 @@ public class TransVisitor : GtlBaseVisitor<object>
         Outputfile.Add("mod library;");
         Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};");
         Outputfile.Add("fn main()\n{");
+
         Outputfile.Add("let gamestate: GameState = GameState::new();");
+
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())
         {
