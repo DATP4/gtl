@@ -19,6 +19,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         _objecttable.Add("gamestate", [["opponent", "turn"], ["object", "int"]]);
         _objecttable.Add("opponent", [["lastmove"], ["move"]]);
         EnterScope(new Scope());
+        AddLastMove();
         // Adds the gamestate object to the vtable
         ScopeStack.Peek().AddVariable("gamestate", "object");
         _ = base.VisitProgram(context);
@@ -100,6 +101,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                 _ = Visit(stmt.game_functions());
                 continue;
             }
+            else if (stmt.print() != null)
+            {
+                _ = Visit(stmt.print());
+            }
         }
 
         if (!lastExpressionType.Equals(func_type))
@@ -147,6 +152,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             else if (stmt.game_functions() != null)
             {
                 _ = Visit(stmt.game_functions());
+            }
+            else if (stmt.print() != null)
+            {
+                _ = Visit(stmt.print());
             }
         }
         ExitScope();
@@ -203,6 +212,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             {
                 _ = Visit(stmt.game_functions());
             }
+            else if (stmt.print() != null)
+            {
+                _ = Visit(stmt.print());
+            }
         }
         ExitScope();
         return ifLastStatement;
@@ -236,6 +249,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             {
                 _ = Visit(stmt.game_functions());
             }
+            else if (stmt.print() != null)
+            {
+                _ = Visit(stmt.print());
+            }
         }
         ExitScope();
         return ifLastStatement;
@@ -247,7 +264,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitLiteralExpr(GtlParser.LiteralExprContext context)
     {
         string val = context.GetText();
-
 
         if (int.TryParse(val, out _))
         {
@@ -262,6 +278,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         if (bool.TryParse(val, out _))
         {
             return "bool";
+        }
+        if (val[0].Equals('"') && val[val.Length - 1].Equals('"'))
+        {
+            return "str";
         }
         throw new NotSupportedException($"literal expression expected type but received {val}");
     }
@@ -328,12 +348,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new WrongTypeException("Game function", "Game", gametype);
         }
-        string exprtype = (string)Visit(context.expr());
-        if (!exprtype.Equals("int"))
+        string turnsType = (string)Visit(context.expr());
+        if (!turnsType.Equals("int"))
         {
-            throw new WrongTypeException("Game function", "int", exprtype);
+            throw new WrongTypeException("Game function", "int", turnsType);
         }
-        return base.VisitGame_functions(context);
+        return null!;
     }
     public override object VisitMemberExpr(GtlParser.MemberExprContext context)
     {
@@ -490,9 +510,21 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitMethod_access([NotNull] GtlParser.Method_accessContext context)
     {
         string id = context.ID().GetText();
+        if (id.Equals("lastMove"))
+        {
+            string inputtype = (string)Visit(context.arg_call());
+            if (inputtype.Equals("str"))
+            {
+                return "move";
+            }
+            else
+            {
+                throw new WrongTypeException("method access", "str", inputtype);
+            }
+        }
+
         return id switch
         {
-            "lastMove" => "move",
             "turn" => "int",
             "moveAtTurn" => "move",
             "playerScore" => "int",
@@ -652,6 +684,11 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         }
         return exprtype;
     }
+    public override object VisitPrint([NotNull] GtlParser.PrintContext context)
+    {
+        _ = Visit(context.expr());
+        return null!;
+    }
     private object VisitId(string id)
     {
         // checks the vtable for said id and returns its type, throws error if the id is not found
@@ -684,6 +721,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     private Scope GetCurrentScope()
     {
         return ScopeStack.Peek();
+    }
+    private void AddLastMove()
+    {
+        string[] input = ["str"];
+        string[] output = ["move"];
+        ScopeStack.Peek().AddFunction("lastMove", [input, output]);
     }
     /*
     public string GetTypeFromStatement(GtlParser.StatementContext ctx)

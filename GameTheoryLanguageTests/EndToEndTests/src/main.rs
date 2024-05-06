@@ -1,4 +1,5 @@
-mod library;
+#![allow(warnings)]
+ mod library;
 use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};
 #[cfg(test)]
 mod tests {
@@ -465,14 +466,14 @@ pl_and_strat: vec![
 ],
 }
 ;
-let prisoners: Game = Game{
+let mut prisoners: Game = Game{
 game_state: gamestate,
 strat_space: stratspace,
 players: p,
 pay_matrix: payoff,
 }
 ;
-let finishedgame = prisoners.run(5);
+let finishedgame = Game::run(&mut prisoners, &mut 5);
 assert_eq!(finishedgame.game_state.turn, 6);
 assert_eq!(finishedgame.game_state.player_score("p1".to_string()), 17);
 assert_eq!(finishedgame.game_state.player_score("p2".to_string()), 1);
@@ -557,14 +558,14 @@ pl_and_strat: vec![
 ],
 }
 ;
-let prisoners: Game = Game{
+let mut prisoners: Game = Game{
 game_state: gamestate,
 strat_space: stratspace,
 players: p,
 pay_matrix: payoff,
 }
 ;
-let finishedgame = prisoners.run(5);
+let finishedgame = Game::run(&mut prisoners, &mut 5);
 assert_eq!(finishedgame.game_state.turn, 6);
 assert_eq!(finishedgame.game_state.player_score("p1".to_string()), 12);
 assert_eq!(finishedgame.game_state.player_score("p2".to_string()), 7);

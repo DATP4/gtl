@@ -1,5 +1,7 @@
 int someVar = 3;
 int x = 5;
+str dasdsa = "dsadas";
+print(dasdsa);
 
 // Nonsensical function;
 intFunction : (int aVar) -> int {
@@ -29,8 +31,8 @@ bool a = boolFunction();
 Moves t = [cooperate, deflect];
 
 // Declare actions
-Action oppDeflect = (gamestate.lastMove(str p2) == cooperate) then deflect;
-Action oppCooperate = (gamestate.lastMove(str p2) == deflect) then cooperate;
+Action oppDeflect = (gamestate.lastMove("p2") == cooperate) then deflect;
+Action oppCooperate = (gamestate.lastMove("p2") == deflect) then cooperate;
 Action turn = (gamestate.turn == 1) then cooperate;
 Action otherwise = () then deflect;
 
@@ -65,4 +67,4 @@ Players p = [
 
 Game prisoners = (stratspace, p, payoff);
 
-prisoners.run(5);
+run(prisoners, 5);

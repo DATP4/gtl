@@ -92,9 +92,22 @@ public class ParserTests
         AssertFalse(input6);
     }
     [TestMethod]
+    public void PrintTest()
+    {
+        string input1 = "print(x);";
+        string input2 = "print(\"something\");";
+        string input3 = "print(func(5));";
+        string input4 = "print(int x = 5;);";
+
+        AssertTrue(input1);
+        AssertTrue(input2);
+        AssertTrue(input3);
+        AssertFalse(input4);
+    }
+    [TestMethod]
     public void ActionTest()
     {
-        string input1 = "Action oppCooperate = (gamestate.opponent.lastmove == deflect) then cooperate;";
+        string input1 = "Action oppCooperate = (gamestate.lastMove(\"p2\") == deflect) then cooperate;";
         string input2 = "Action turn = (gamestate.turn == 4) then deflect;";
         string input3 = "Actio turn = (gamestate.turn == 4) then deflect;";
         string input4 = "Action turn = (gamestate.turn == 4) deflect;";
@@ -184,9 +197,9 @@ public class ParserTests
     [TestMethod]
     public void RunTest()
     {
-        string input1 = "game.run(10);";
-        string input2 = "game.run(x);";
-        string input3 = "game.run(10;";
+        string input1 = "run(game, 10);";
+        string input2 = "run(game, x);";
+        string input3 = "run(game, 10;";
 
         AssertTrue(input1);
         AssertTrue(input2);

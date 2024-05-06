@@ -16,6 +16,7 @@ statement
     | function
     | game_variable_declaration ';'
     | game_functions ';'
+    | print ';'
     ;
 
 // Expressions
@@ -54,7 +55,7 @@ function
 
 // Literals
 literal
-    : INT | REAL | boolean_literal
+    : INT | REAL | STRING | boolean_literal
     ;
 
 boolean_literal
@@ -103,7 +104,7 @@ member_access
     ;
 
 method_access
-    : '.' ID '(' arg_def ')'
+    : '.' ID '(' arg_call ')'
     ;
 
 // Game theory specific grammar
@@ -139,7 +140,10 @@ move
     ;
 
 game_functions
-    : ID '.' RUN '(' expr ')'
+    : RUN '(' ID',' expr ')'
+    ;
+print
+    : PRINT'('expr')'
     ;
 
 // Types
@@ -174,6 +178,7 @@ T_PLAYERS : 'Players';
 T_PAYOFF  : 'Payoff';
 T_STRATEGYSPACE: 'Strategyspace';
 RUN     : 'run';
+PRINT   : 'print';
 
 IF      : 'if';
 THEN    : 'then';
@@ -194,6 +199,7 @@ COLON   : ':';
 SEMICOLON: ';';
 COMMA   : ',';
 DOT     : '.';
+QUOTE   : '"';
 
 PLUS    : '+';
 MINUS   : '-';
@@ -217,6 +223,7 @@ FALSE   : 'FALSE';
 
 INT     : [0-9]+;
 REAL    : [0-9]+ '.' [0-9]+;
+STRING  : '"'[a-zA-Z_0-9]*'"';
 ID      : [a-zA-Z_][a-zA-Z_0-9]*;
 
 WS      : [ \t\r\n]+ -> skip;
