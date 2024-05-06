@@ -315,6 +315,8 @@ public class TypecheckingTests
     private void AssertFalse<T>(string toTest) where T : Exception
     {
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(toTest));
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         GtlParser parser = new GtlParser(tokenStream)!;
 
@@ -331,6 +333,8 @@ public class TypecheckingTests
     private void AssertTrue(string toTest)
     {
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(toTest));
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         GtlParser parser = new GtlParser(tokenStream)!;
 
