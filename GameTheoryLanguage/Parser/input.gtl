@@ -31,7 +31,8 @@ Moves t = [cooperate, deflect];
 // Declare actions
 Action oppDeflect = (gamestate.lastMove(str p2) == cooperate) then deflect;
 Action oppCooperate = (gamestate.lastMove(str p2) == deflect) then cooperate;
-Action turn = (gamestate.turn == 4) then deflect;
+Action turn = (gamestate.turn == 1) then cooperate;
+Action otherwise = () then deflect;
 
 Strategy aStrat1 = [
     oppDeflect,
@@ -40,7 +41,8 @@ Strategy aStrat1 = [
 ];
 
 Strategy aStrat2 = [
-    turn
+    turn,
+    otherwise
 ];
 
 Strategyspace stratspace = [
@@ -51,8 +53,8 @@ Strategyspace stratspace = [
 ];
 
 Payoff payoff = [
-    p1 -> [1,4,0,2],
-    p2 -> [1,0,4,2]
+    p1 -> [2,4,0,1],
+    p2 -> [2,0,4,1]
 ];
 
 
