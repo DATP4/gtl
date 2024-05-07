@@ -35,7 +35,7 @@ static void MyParseMethod()
 
 
     // Optionally print the parse tree for debugging
-    Console.WriteLine(tree.ToStringTree(parser));
+    // Console.WriteLine(tree.ToStringTree(parser));
 }
 
 MyParseMethod();

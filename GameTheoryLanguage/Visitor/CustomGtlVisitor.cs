@@ -18,7 +18,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         _objecttable.Add("opponent", [["lastmove"], ["move"]]);
         EnterScope(new Scope());
         ScopeStack.Peek().AddVariable("gamestate", "object");
-        Console.WriteLine("Visiting program");
         _ = base.VisitProgram(context);
         ExitScope();
         return null!;
@@ -110,7 +109,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitIfElse(GtlParser.IfElseContext context)
     {
-        Console.WriteLine("Visiting if statement");
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("bool"))
         {
@@ -164,7 +162,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitElseif([NotNull] GtlParser.ElseifContext context)
     {
-        Console.WriteLine("Visiting elseif statement");
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("bool"))
         {
@@ -202,7 +199,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitElse([NotNull] GtlParser.ElseContext context)
     {
-        Console.WriteLine("Visiting else statement");
         EnterScope(new Scope());
         string ifLastStatement = "";
         foreach (var stmt in context.statement())
@@ -237,7 +233,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     */
     public override object VisitLiteralExpr(GtlParser.LiteralExprContext context)
     {
-        Console.WriteLine("Visiting literal expr");
         string val = context.GetText();
 
 
@@ -259,7 +254,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitBinaryExpr(GtlParser.BinaryExprContext context)
     {
-        Console.WriteLine("Visiting binary expr");
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
         if (left.Equals("int") && right.Equals("int"))
@@ -278,10 +272,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
-        Console.WriteLine("Visiting boolean expr");
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
-        Console.WriteLine("Left: " + left);
         string op = context.op.Text;
         if (left.Equals("bool") && right.Equals("bool") &&
         (op == "==" || op == "!=" || op == "&&" || op == "||" || op == "^^"))
@@ -306,7 +298,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitLogicalNotExpr(GtlParser.LogicalNotExprContext context)
     {
-        Console.WriteLine("Visiting logical not expr");
         string expr = (string)Visit(context.expr());
         if (expr.Equals("bool"))
         {
@@ -316,7 +307,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_functions([NotNull] GtlParser.Game_functionsContext context)
     {
-        Console.WriteLine("Visting game functions");
         string gametype = (string)VisitId(context.ID().GetText());
         if (!gametype.Equals("Game"))
         {
@@ -331,7 +321,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitMemberExpr(GtlParser.MemberExprContext context)
     {
-        Console.WriteLine("Visting member expression");
         string id = context.ID().GetText();
         string type = (string)VisitId(id);
         if (!type.Equals("object"))
@@ -397,13 +386,11 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitMember_access([NotNull] GtlParser.Member_accessContext context)
     {
-        Console.WriteLine("Visiting member access");
         return base.VisitMember_access(context);
     }
 
     public override object VisitArgCallExpr(GtlParser.ArgCallExprContext context)
     {
-        Console.WriteLine("Visitting arg call expression");
         string functionId = context.ID().GetText();
         if (!ScopeStack.Peek().FtableContains(functionId))
         {
@@ -430,12 +417,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitParExpr(GtlParser.ParExprContext context)
     {
-        Console.WriteLine("Visting Parentheses expression");
         return (string)Visit(context.expr());
     }
     public override object VisitGame_utility_function([NotNull] GtlParser.Game_utility_functionContext context)
     {
-        Console.WriteLine("Visting game utility function");
         string arraytype = (string)Visit(context.array());
         if (!arraytype.Equals("intarray"))
         {
@@ -450,7 +435,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitArg_call([NotNull] GtlParser.Arg_callContext context)
     {
-        Console.WriteLine("Visitting Arg call");
         GtlParser.ExprContext[] expr = context.expr();
         string[] stringArray = [];
         foreach (GtlParser.ExprContext expression in expr)
@@ -461,7 +445,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitArg_def([NotNull] GtlParser.Arg_defContext context)
     {
-        Console.WriteLine("Visitting arg def");
         GtlParser.TypeContext[] types = context.type();
         Antlr4.Runtime.Tree.ITerminalNode[] ids = context.ID();
         for (int i = 0; i < types.Length; i++)
@@ -479,7 +462,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitMethod_access([NotNull] GtlParser.Method_accessContext context)
     {
-        Console.WriteLine("Visiting method access");
         string id = context.ID().GetText();
         return id switch
         {
@@ -493,7 +475,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitPlayer([NotNull] GtlParser.PlayerContext context)
     {
-        Console.WriteLine("Visiting player");
         string id = context.ID(0).GetText();
         string type = (string)VisitId(context.ID(1).GetText());
         if (!type.Equals("Strategy"))
@@ -505,7 +486,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
-        Console.WriteLine("Visting game variable declaration");
         string gametype = context.game_type().GetText();
         if (gametype.Equals("Moves"))
         {
@@ -526,7 +506,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_expr([NotNull] GtlParser.Game_exprContext context)
     {
-        Console.WriteLine("Visting game expression");
         if (context.array() != null)
         {
             return Visit(context.array());
@@ -566,7 +545,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitArray([NotNull] GtlParser.ArrayContext context)
     {
-        Console.WriteLine("Visiting array");
         string arraytype = (string)Visit(context.array_type(0));
         for (int i = 1; i < context.array_type().Length; i++)
         {
@@ -596,7 +574,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitTuple([NotNull] GtlParser.TupleContext context)
     {
-        Console.WriteLine("Visiting tuple");
         foreach (Antlr4.Runtime.Tree.ITerminalNode move in context.ID())
         {
             string type = (string)VisitId(move.GetText());
@@ -609,18 +586,13 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitMove([NotNull] GtlParser.MoveContext context)
     {
-        Console.WriteLine("Visiting move");
         return VisitId(context.ID().GetText());
     }
     public override object VisitGame_tuple([NotNull] GtlParser.Game_tupleContext context)
     {
-        Console.WriteLine("Visiting game tuple");
         string stratspacetype = (string)VisitId(context.ID(0).GetText());
         string playerlisttype = (string)VisitId(context.ID(1).GetText());
         string payofftype = (string)VisitId(context.ID(2).GetText());
-        Console.WriteLine(stratspacetype);
-        Console.WriteLine(playerlisttype);
-        Console.WriteLine(payofftype);
         if (!stratspacetype.Equals("Strategyspace"))
         {
             throw new WrongTypeException("Game tuple", "Strategyspace", stratspacetype);
@@ -646,7 +618,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     private object VisitId(string id)
     {
-        Console.WriteLine("Visiting ID expression");
         if (ScopeStack.Peek().VtableContains(id))
         {
             return ScopeStack.Peek().VtableFind(id);
