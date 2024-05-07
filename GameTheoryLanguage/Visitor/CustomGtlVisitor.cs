@@ -10,13 +10,16 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 {
     private Stack<Scope> ScopeStack { get; } = new Stack<Scope>();
     private readonly Objecttable _objecttable = new Objecttable();
-
+    // This is the first function that is run when the typechecker is used, afterwards it follows a depth-first search algorithm to traverse the program
     public override object VisitProgram([NotNull] GtlParser.ProgramContext context)
     {
+        // Objecttable is cleared since it is not cleared automatically between tests
         _objecttable.Clear();
+        // Adds the gamestate object and its children to the objecttable
         _objecttable.Add("gamestate", [["opponent", "turn"], ["object", "int"]]);
         _objecttable.Add("opponent", [["lastmove"], ["move"]]);
         EnterScope(new Scope());
+        // Adds the gamestate object to the vtable
         ScopeStack.Peek().AddVariable("gamestate", "object");
         _ = base.VisitProgram(context);
         ExitScope();
@@ -32,8 +35,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
-        // Check if the type declaration and the type of the value matches
-        // and if the variable is already declared, otherwise adding it to the variable table
+        // Checks if the type declaration and the type of the value matches
+        // and also if the id declaration of the variable has already been used, if not the variable gets added to the vtable
         string type = context.type().GetText();
         string variableID = context.ID().GetText();
         string valueType = (string)Visit(context.expr());
@@ -46,11 +49,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             throw new DeclarationException($"Variable {variableID} already exists");
         }
         ScopeStack.Peek().AddVariable(variableID, type);
+        // This return the type of the variable being declared, as it is needed to typecheck functions and if/else expressions
         return type;
     }
     public override object VisitFunction([NotNull] GtlParser.FunctionContext context)
     {
-        // 
+        // First the function is added to the function table, this is done before typechecking the function as it is required for the function to be called recursively
         string functionId = context.ID().GetText();
         GtlParser.TypeContext[] typeContext = context.arg_def().type();
         string[] stringArray = [];
@@ -62,11 +66,14 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         ScopeStack.Peek().AddFunction(functionId, functionTypes);
         EnterScope(new Scope());
 
+        // This visits the node in the parsetree where the functions arguments are defined, which adds them to the vtable
         _ = Visit(context.arg_def());
 
         string lastExpressionType = "";
 
         string func_type = context.type().GetText();
+        // This keeps track of what the type of the last expression in the function is so we can check the return type
+        // It also visits each individual statement thereby typechecking them
         foreach (var stmt in context.statement())
         {
             if (stmt.expr() != null)
@@ -109,6 +116,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitIfElse(GtlParser.IfElseContext context)
     {
+        // First checks if the expression used in the if statement is a boolean
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("bool"))
         {
@@ -117,6 +125,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         EnterScope(new Scope());
         string ifLastStatement = "";
         string ifElseLastStatement = "";
+        // This checks the type of the last expression in the if statement in the same way it is done in a function
         foreach (var stmt in context.statement())
         {
             if (stmt.expr() != null)
@@ -141,6 +150,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
         }
         ExitScope();
+        // If there is 1 or more if else statements, they are all visitted, and it is checked if they have the same return type as the if statement
         if (context.elseif() != null)
         {
             foreach (GtlParser.ElseifContext elseifcontext in context.elseif())
@@ -153,6 +163,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
 
         }
+        // finally the else statement is visitted and we check whether or not it has the same return type as the if statement
         ifElseLastStatement = (string)Visit(context.@else());
         if (ifLastStatement != ifElseLastStatement)
         {
@@ -162,6 +173,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitElseif([NotNull] GtlParser.ElseifContext context)
     {
+        // Works in the same way as the if statement
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("bool"))
         {
@@ -199,6 +211,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitElse([NotNull] GtlParser.ElseContext context)
     {
+        // Works in the same way as the if statement
         EnterScope(new Scope());
         string ifLastStatement = "";
         foreach (var stmt in context.statement())
@@ -254,6 +267,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitBinaryExpr(GtlParser.BinaryExprContext context)
     {
+        // Checks that both expressions used have the same type, and if they are both reals checks that the MOD operator isn't used
+        // If any non-defined operator is used it would be caught in the parser so we can largely ignore operators here
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
         if (left.Equals("int") && right.Equals("int"))
@@ -272,6 +287,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitBooleanExpr(GtlParser.BooleanExprContext context)
     {
+        // Cheks that both expressions used have the same type and the operator used is defined for that type
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
         string op = context.op.Text;
@@ -321,6 +337,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitMemberExpr(GtlParser.MemberExprContext context)
     {
+        // first we check if the member we are trying to access is an object and it is in the objecttable
         string id = context.ID().GetText();
         string type = (string)VisitId(id);
         if (!type.Equals("object"))
@@ -332,6 +349,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             throw new MemberAccessException("Object not found");
         }
         GtlParser.Member_accessContext[] membercontexts = context.member_access();
+        // checks if the member that is being accessed is a part of the object in the objecttable
         if (membercontexts.Length > 1)
         {
             string nextid = membercontexts[0].ID().GetText();
@@ -353,6 +371,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                 throw new WrongTypeException($"Expected type object from member {objarray[0][k]} but received {objarray[1][k]}");
             }
         }
+        // checks that each member being accesses is a part of the previous members object table
         for (int i = 0; i < membercontexts.Length - 2; i++)
         {
             string memberid = membercontexts[i].ID().GetText();
@@ -391,21 +410,26 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitArgCallExpr(GtlParser.ArgCallExprContext context)
     {
+        // Firstly checks that the function being called has been declared in the current scope
         string functionId = context.ID().GetText();
         if (!ScopeStack.Peek().FtableContains(functionId))
         {
             throw new FunctionCallException($"{functionId} not found in Function table");
         }
         string[] stringArray = [];
+        // finds the types of all the input parameters used
         foreach (GtlParser.ExprContext exprcontext in context.arg_call().expr())
         {
             stringArray = stringArray.Append(Visit(exprcontext).ToString()).ToArray()!;
         }
+        // finds the input types the function expects and the functions return type in the ftable
         string[][] functionTypes = ScopeStack.Peek().FtableFind(functionId);
+        // Checks that the function is given the correct amount of inputs
         if (stringArray.Length != functionTypes[0].Length)
         {
             throw new FunctionCallException("Not the correct amount of input parameters in function");
         }
+        // checks that each input given has the correct type
         for (int i = 0; i < stringArray.Length; i++)
         {
             if (!stringArray[i].Equals(functionTypes[0][i]))
@@ -413,6 +437,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                 throw new FunctionCallException(functionTypes[0][i], stringArray[i]);
             }
         }
+        // returns the functions returntype
         return ScopeStack.Peek().FtableFind(functionId)[1][0];
     }
     public override object VisitParExpr(GtlParser.ParExprContext context)
@@ -421,6 +446,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_utility_function([NotNull] GtlParser.Game_utility_functionContext context)
     {
+        // Checks that the input given is an array of ints, if so returns the type utilarray
         string arraytype = (string)Visit(context.array());
         if (!arraytype.Equals("intarray"))
         {
@@ -447,6 +473,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     {
         GtlParser.TypeContext[] types = context.type();
         Antlr4.Runtime.Tree.ITerminalNode[] ids = context.ID();
+        // adds each input the the vtable of the functions scope as long as the id has not already been used
         for (int i = 0; i < types.Length; i++)
         {
             string type = types[i].GetText();
@@ -475,6 +502,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
 
     public override object VisitPlayer([NotNull] GtlParser.PlayerContext context)
     {
+        // checks that the player is given a strategy and then the player is added to the vtable
         string id = context.ID(0).GetText();
         string type = (string)VisitId(context.ID(1).GetText());
         if (!type.Equals("Strategy"))
@@ -486,6 +514,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
+        // firstly checks if the declaration declares moves, if so said moves are added to the vtable
         string gametype = context.game_type().GetText();
         if (gametype.Equals("Moves"))
         {
@@ -496,6 +525,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
             return null!;
         }
+        // if the declaration is not a move declaration, the type of the value given and the declaration type are checked, if they are equal the id is added to the vtable
         string valuetype = (string)Visit(context.game_expr());
         if (!gametype.Equals(valuetype))
         {
@@ -523,6 +553,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitAction([NotNull] GtlParser.ActionContext context)
     {
+        // firstly checks that the expressions given is a boolean, afterwards checks that the action evaluates to a move
         string expressiontype;
         if (context.expr() == null)
         {
@@ -545,6 +576,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitArray([NotNull] GtlParser.ArrayContext context)
     {
+        // firstly checks that all entrys in the array have the same type
         string arraytype = (string)Visit(context.array_type(0));
         for (int i = 1; i < context.array_type().Length; i++)
         {
@@ -554,6 +586,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
                 throw new WrongTypeException("Array", arraytype, valuetype);
             }
         }
+        // lastly returns the correct type based on what type of entrys the array consists of
         if (arraytype.Equals("utilarray"))
         {
             return "Payoff";
@@ -574,6 +607,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitTuple([NotNull] GtlParser.TupleContext context)
     {
+        // checks that each entry in the tuple is a move
         foreach (Antlr4.Runtime.Tree.ITerminalNode move in context.ID())
         {
             string type = (string)VisitId(move.GetText());
@@ -590,6 +624,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitGame_tuple([NotNull] GtlParser.Game_tupleContext context)
     {
+        // checks that the inputs in the game tuple are a strategyspace, a player array and a payoff-matrix
         string stratspacetype = (string)VisitId(context.ID(0).GetText());
         string playerlisttype = (string)VisitId(context.ID(1).GetText());
         string payofftype = (string)VisitId(context.ID(2).GetText());
@@ -609,6 +644,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     public override object VisitUnaryExpr([NotNull] GtlParser.UnaryExprContext context)
     {
+        // checks that the expression is of type int or real
         string exprtype = (string)Visit(context.expr());
         if (!exprtype.Equals("int") && !exprtype.Equals("real"))
         {
@@ -618,6 +654,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     }
     private object VisitId(string id)
     {
+        // checks the vtable for said id and returns its type, throws error if the id is not found
         if (ScopeStack.Peek().VtableContains(id))
         {
             return ScopeStack.Peek().VtableFind(id);
