@@ -413,13 +413,13 @@ act_move: Moves::cooperate,
 ;
 let oppDeflect: Action = Action{
 condition: Condition::Expression(BoolExpression {
-b_val: |gamestate: &GameState| GameState::last_move(&gamestate, "p2".to_string()) == Moves::cooperate}),
+b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::cooperate}),
 act_move: Moves::deflect,
 }
 ;
 let oppCooperate: Action = Action{
 condition: Condition::Expression(BoolExpression {
-b_val: |gamestate: &GameState| GameState::last_move(&gamestate, "p2".to_string()) == Moves::deflect}),
+b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::deflect}),
 act_move: Moves::cooperate,
 }
 ;
@@ -467,16 +467,16 @@ pl_and_strat: vec![
 }
 ;
 let mut prisoners: Game = Game{
-game_state: gamestate,
-strat_space: stratspace,
-players: p,
-pay_matrix: payoff,
+game_state: &mut gamestate,
+strat_space: &stratspace,
+players: &p,
+pay_matrix: &payoff,
 }
 ;
 let finishedgame = Game::run(&mut prisoners, &mut 5);
-assert_eq!(finishedgame.game_state.turn, 6);
-assert_eq!(finishedgame.game_state.player_score("p1".to_string()), 17);
-assert_eq!(finishedgame.game_state.player_score("p2".to_string()), 1);
+assert_eq!(finishedgame.turn, 6);
+assert_eq!(finishedgame.player_score(&"p1".to_string()), 17);
+assert_eq!(finishedgame.player_score(&"p2".to_string()), 1);
 }
 #[test]
 fn program_test_2(){
@@ -505,7 +505,7 @@ let mut gamestate: GameState = GameState::new();
 ;
 let a1: Action = Action{
 condition: Condition::Expression(BoolExpression {
-b_val: |gamestate: &GameState| GameState::last_move(&gamestate, "p2".to_string()) == GameState::last_move(&gamestate, "p3".to_string())}),
+b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == GameState::last_move(&gamestate, &"p3".to_string())}),
 act_move: Moves::a,
 }
 ;
@@ -559,16 +559,16 @@ pl_and_strat: vec![
 }
 ;
 let mut prisoners: Game = Game{
-game_state: gamestate,
-strat_space: stratspace,
-players: p,
-pay_matrix: payoff,
+game_state: &mut gamestate,
+strat_space: &stratspace,
+players: &p,
+pay_matrix: &payoff,
 }
 ;
 let finishedgame = Game::run(&mut prisoners, &mut 5);
-assert_eq!(finishedgame.game_state.turn, 6);
-assert_eq!(finishedgame.game_state.player_score("p1".to_string()), 12);
-assert_eq!(finishedgame.game_state.player_score("p2".to_string()), 7);
-assert_eq!(finishedgame.game_state.player_score("p3".to_string()), 7);
+assert_eq!(finishedgame.turn, 6);
+assert_eq!(finishedgame.player_score(&"p1".to_string()), 12);
+assert_eq!(finishedgame.player_score(&"p2".to_string()), 7);
+assert_eq!(finishedgame.player_score(&"p3".to_string()), 7);
 }
 }
