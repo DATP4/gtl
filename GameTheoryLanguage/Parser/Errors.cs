@@ -3,7 +3,8 @@ public class ErrorStrategy : DefaultErrorStrategy
 {
     public override void ReportError(Parser recognizer, RecognitionException e)
     {
-        throw new ParserException();
+        NotifyErrorListeners(recognizer, "error", e);
+        throw new ParserException("reporterror");
     }
 }
 public class ErrorListener : BaseErrorListener
