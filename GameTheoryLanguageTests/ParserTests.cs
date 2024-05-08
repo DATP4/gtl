@@ -196,17 +196,11 @@ public class ParserTests
 
     private void AssertFalse(string program)
     {
-        ICharStream stream = CharStreams.fromString(program);
-
-        // Create a lexer
-        ITokenSource lexer = new GtlLexer(stream);
-
-        // Create a token stream
-        // Change this to ITokenStream
-        CommonTokenStream tokens = new(lexer);
-
-        // Create a parser
-        GtlParser parser = new(tokens)!;
+        GtlLexer lexer = new GtlLexer(CharStreams.fromString(program));
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        GtlParser parser = new GtlParser(tokenStream)!;
         parser.ErrorHandler = new ErrorStrategy();
         parser.RemoveErrorListeners();
         parser.AddErrorListener(new ErrorListener());
@@ -214,17 +208,11 @@ public class ParserTests
     }
     private void AssertTrue(string program)
     {
-        ICharStream stream = CharStreams.fromString(program);
-
-        // Create a lexer
-        ITokenSource lexer = new GtlLexer(stream);
-
-        // Create a token stream
-        // Change this to ITokenStream
-        CommonTokenStream tokens = new(lexer);
-
-        // Create a parser
-        GtlParser parser = new(tokens)!;
+        GtlLexer lexer = new GtlLexer(CharStreams.fromString(program));
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        GtlParser parser = new GtlParser(tokenStream)!;
         parser.ErrorHandler = new ErrorStrategy();
         parser.RemoveErrorListeners();
         parser.AddErrorListener(new ErrorListener());

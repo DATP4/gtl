@@ -126,6 +126,8 @@ public class EndToEndTests
         Assertstring = output;
         Testtype = testtype;
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(input));
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         GtlParser parser = new GtlParser(tokenStream)!;
 
