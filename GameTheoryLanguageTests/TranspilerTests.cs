@@ -193,6 +193,32 @@ public class TranspilerTests
         parser.AddErrorListener(new ErrorListener());
 
         var parseTree = parser.program();
+        TestVisitor transvisitor = new TestVisitor();
+        _ = transvisitor.Visit(parseTree);
+        string workingDirectory = Environment.CurrentDirectory;
+        string gtlPath = Directory.GetParent(workingDirectory)!.Parent!.Parent!.Parent!.FullName;
+        string path = gtlPath + "/GameTheoryLanguage/output/src/main.rs";
+        string output = File.ReadAllText(path);
+        output = output.Replace("\r", "");
+        output = output.Replace("\n", "");
+        output = output.Remove(0, 143);
+        output = output.Remove(output.Length - 1, 1);
+        Console.WriteLine("Expected: " + expectedOutput);
+        Console.WriteLine("Received: " + output);
+        Assert.IsTrue(output.Equals(expectedOutput));
+    }
+
+    private void AssertIntegrationTrue(string input, string expectedOutput)
+    {
+        GtlLexer lexer = new GtlLexer(CharStreams.fromString(input));
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        GtlParser parser = new GtlParser(tokenStream)!;
+
+        parser.ErrorHandler = new ErrorStrategy();
+        parser.RemoveErrorListeners();
+        parser.AddErrorListener(new ErrorListener());
+
+        var parseTree = parser.program();
         CustomGtlVisitor visitor = new CustomGtlVisitor();
         _ = visitor.Visit(parseTree);
         TestVisitor transvisitor = new TestVisitor();
