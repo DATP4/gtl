@@ -11,6 +11,8 @@ static void MyParseMethod()
 
     // Create a lexer
     GtlLexer lexer = new GtlLexer(stream);
+    lexer.RemoveErrorListeners();
+    lexer.AddErrorListener(new ErrorListener());
 
     // Create a token stream
     CommonTokenStream tokens = new CommonTokenStream(lexer);
