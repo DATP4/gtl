@@ -182,6 +182,8 @@ public class TranspilerTests
     {
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(input));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
         GtlParser parser = new GtlParser(tokenStream)!;
 
         parser.ErrorHandler = new ErrorStrategy();
@@ -208,6 +210,8 @@ public class TranspilerTests
     private void AssertIntegrationFalse(string input)
     {
         GtlLexer lexer = new GtlLexer(CharStreams.fromString(input));
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new ErrorListener());
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         GtlParser parser = new GtlParser(tokenStream)!;
 
