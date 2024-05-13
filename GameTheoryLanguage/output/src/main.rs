@@ -8,9 +8,14 @@ let someVar = 3
 ;
 let x = 5
 ;
+let dasdsa = "dsadas"
+;
+println!("{:?}", dasdsa)
+;
 fn intFunction(aVar: &i32) -> i32 {
 let someVar = 3;
 let x = 5;
+let dasdsa = "dsadas";
 let y = x + 10 * 5
 ;if x < 10 * 5 {
 let z = 10 / 5
@@ -27,6 +32,7 @@ intFunction(&(someVar));
 fn boolFunction() -> bool {
 let someVar = 3;
 let x = 5;
+let dasdsa = "dsadas";
 true
 }
 let a = boolFunction()

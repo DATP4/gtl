@@ -29,6 +29,7 @@ public class EndToEndTests
         BinaryExpressionTest();
         BooleanExpressionTest();
         LogicalNotTest();
+        PrintTest();
         UnaryExpressionTest();
         IfElseTest();
         FunctionTest();
@@ -67,6 +68,11 @@ public class EndToEndTests
         Createtest("bool test1 = !(1 != 0);", "assert_eq!(test1, false)", "logical_not");
         Createtest("bool test1 = !(1 <= 2);", "assert_eq!(test1, false)", "logical_not");
         Createtest("bool test1 = !(!(TRUE && TRUE) || ((TRUE && TRUE) == TRUE));", "assert_eq!(test1, false)", "logical_not");
+    }
+    private void PrintTest()
+    {
+        // This test just makes sure the file compiles with print statements
+        Createtest("int x = 1; real y = 2.0; bool z = TRUE; print(x); print(y); print(z);", "assert_eq!(1, 1);", "print");
     }
     private void UnaryExpressionTest()
     {

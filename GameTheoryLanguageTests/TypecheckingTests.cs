@@ -178,6 +178,16 @@ public class TypecheckingTests
         AssertFalse<WrongTypeException>(input8);
     }
     [TestMethod]
+    public void PrintTest()
+    {
+        string input1 = "int x = 5; print(x);";
+        string input2 = "real x = 5.0; print(x);";
+        string input3 = "print(x);";
+        AssertTrue(input1);
+        AssertTrue(input2);
+        AssertFalse<VariableNotFoundException>(input3);
+    }
+    [TestMethod]
     public void TestFunctionDeclaration()
     {
         string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;}";
@@ -215,17 +225,19 @@ public class TypecheckingTests
     [TestMethod]
     public void TestMemberAccess()
     {
-        string input1 = "gamestate.opponent.lastmove;";
+        string input1 = "gamestate.lastMove(\"p2\");";
         string input2 = "gamestate.turn;";
-        string input3 = "gamestate.lastmove;";
+        string input3 = "str x = \"p2\"; gamestate.lastMove(x);";
         string input4 = "int x = 5; x.turn;";
         string input5 = "gamestat.turn;";
+        string input6 = "int x = 5; gamestate.lastMove(x);";
 
         AssertTrue(input1);
         AssertTrue(input2);
-        AssertFalse<MemberAccessException>(input3);
+        AssertTrue(input3);
         AssertFalse<WrongTypeException>(input4);
         AssertFalse<VariableNotFoundException>(input5);
+        AssertFalse<WrongTypeException>(input6);
     }
     [TestMethod]
     public void TestActionDeclaration()

@@ -124,6 +124,23 @@ let test1 = !(!(true && true) || ((true && true) == true))
 assert_eq!(test1, false)
 }
 #[test]
+fn print_test_1(){
+let mut gamestate: GameState = GameState::new();
+let x = 1
+;
+let y = 2.0
+;
+let z = true
+;
+println!("{:?}", x)
+;
+println!("{:?}", y)
+;
+println!("{:?}", z)
+;
+assert_eq!(1, 1);
+}
+#[test]
 fn unary_expression_test_1(){
 let mut gamestate: GameState = GameState::new();
 let x = -5

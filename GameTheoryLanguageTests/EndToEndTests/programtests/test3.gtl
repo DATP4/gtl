@@ -1,7 +1,7 @@
 Moves t = [a, b, cooperate, deflect];
 
 // Declare actions
-Action a1 = (gamestate.lastMove(str p2) == gamestate.lastMove(str p3)) then a;
+Action a1 = (gamestate.lastMove("p2") == gamestate.lastMove("p3")) then a;
 Action a2 = (TRUE) then a;
 Action a3 = (gamestate.turn == 1) then b;
 

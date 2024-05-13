@@ -224,7 +224,7 @@ pub struct Game<'a> {
 // Implementation of the .run() method for the game, which works for the prisoners dilemma.
 // Dunno if it works with other games
 impl<'a> Game<'_> {
-    pub fn run(gm: &'a mut Game, turns: &i32) -> &'a GameState{
+    pub fn run(gm: &'a mut Game, turns: &i32) -> &'a mut GameState{
         // Add players
         gm.game_state.add_players(gm.players, &mut 0);
 
@@ -232,7 +232,7 @@ impl<'a> Game<'_> {
 
         gm.printS_scores(&mut 0);
 
-        return &gm.game_state;
+        return gm.game_state;
     }
 
     pub fn run_game(&mut self, turns: &i32) {

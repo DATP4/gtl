@@ -2,8 +2,8 @@ Moves t = [a, b, cooperate, deflect];
 
 // Declare actions
 Action turn1Coop = (gamestate.turn == 1) then cooperate;
-Action oppDeflect = (gamestate.lastMove(str p2) == cooperate) then deflect;
-Action oppCooperate = (gamestate.lastMove(str p2) == deflect) then cooperate;
+Action oppDeflect = (gamestate.lastMove("p2") == cooperate) then deflect;
+Action oppCooperate = (gamestate.lastMove("p2") == deflect) then cooperate;
 Action turn = (gamestate.turn == 4) then deflect;
 Action coop = () then cooperate;
 
