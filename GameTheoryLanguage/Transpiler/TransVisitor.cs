@@ -65,6 +65,10 @@ public class TransVisitor : GtlBaseVisitor<object>
         {
             retString += Visit(context.game_functions()) + ";";
         }
+        if (context.print() != null)
+        {
+            retString += Visit(context.print()) + ";";
+        }
         return retString!;
     }
 
@@ -306,17 +310,17 @@ public class TransVisitor : GtlBaseVisitor<object>
         if (id.Equals("lastMove"))
         {
             returnString += GtlDictionary.Translate("Functions", "last_move");
-            returnString += $"(&gamestate, \"{context.arg_def().ID()[0]}\".to_string())";
+            returnString += $"(&gamestate, {context.arg_call().expr()[0].GetText()}.to_string())";
         }
         else if (id.Equals("moveAtTurn"))
         {
             returnString += GtlDictionary.Translate("Functions", "move_at_turn");
-            returnString += $"(&gamestate, \"{context.arg_def().ID()[0]}\".to_string(), {context.arg_def().ID(1)})";
+            returnString += $"(&gamestate, {context.arg_call().expr()[0].GetText()}.to_string(), {context.arg_call().expr(1)})";
         }
         else if (id.Equals("playerScore"))
         {
             returnString += GtlDictionary.Translate("Functions", "player_score");
-            returnString += $"(&gamestate, \"{context.arg_def().ID()[0]}\".to_string(), {context.arg_def().ID(1)})";
+            returnString += $"(&gamestate, {context.arg_call().expr()[0].GetText()}.to_string(), {context.arg_call().expr(1)})";
         }
         else if (id.Equals("turn"))
         {
@@ -479,6 +483,11 @@ public class TransVisitor : GtlBaseVisitor<object>
         returnString += "pay_matrix: " + context.ID()[2].GetText() + ",\n";
         return returnString;
 
+    }
+    public override object VisitPrint([NotNull] GtlParser.PrintContext context)
+    {
+        string expr = context.expr().GetText();
+        return "println!(\"{:?}\", " + expr + ")\n";
     }
     private object VisitStrategySpace([NotNull] GtlParser.ArrayContext context)
     {
