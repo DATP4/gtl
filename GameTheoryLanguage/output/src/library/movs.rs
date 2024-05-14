@@ -4,7 +4,7 @@ pub enum Moves {
 
 cooperate,
 
-deflect,
+defect,
 
 None,
 

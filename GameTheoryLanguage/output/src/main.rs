@@ -38,16 +38,16 @@ true
 let a = boolFunction()
 ;
 ;
-let oppDeflect: Action = Action{
+let oppDefect: Action = Action{
 condition: Condition::Expression(BoolExpression {
 b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::cooperate}),
-act_move: Moves::deflect,
+act_move: Moves::cooperate,
 }
 ;
 let oppCooperate: Action = Action{
 condition: Condition::Expression(BoolExpression {
-b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::deflect}),
-act_move: Moves::cooperate,
+b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::defect}),
+act_move: Moves::defect,
 }
 ;
 let turn: Action = Action{
@@ -59,23 +59,23 @@ act_move: Moves::cooperate,
 let otherwise: Action = Action{
 condition: Condition::Expression(BoolExpression {
 b_val: |gamestate: &GameState| true}),
-act_move: Moves::deflect,
+act_move: Moves::defect,
 }
 ;
 let aStrat1: Strategy = Strategy{
-strat: vec![oppDeflect.clone(), oppCooperate.clone(), turn.clone()],
+strat: vec![oppDefect.clone(), oppCooperate.clone(), turn.clone()],
 }
 ;
 let aStrat2: Strategy = Strategy{
-strat: vec![turn.clone(), otherwise.clone()],
+strat: vec![otherwise.clone()],
 }
 ;
 let stratspace: Strategyspace = Strategyspace{
 matrix: vec![
 Moves::cooperate, Moves::cooperate, 
-Moves::deflect, Moves::cooperate, 
-Moves::cooperate, Moves::deflect, 
-Moves::deflect, Moves::deflect, 
+Moves::defect, Moves::cooperate, 
+Moves::cooperate, Moves::defect, 
+Moves::defect, Moves::defect, 
 ],
 }
 ;
