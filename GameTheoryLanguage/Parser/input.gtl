@@ -28,30 +28,29 @@ boolFunction : () -> bool {
 
 bool a = boolFunction();
 
-Moves t = [cooperate, deflect];
+Moves t = [cooperate, defect];
 
 // Declare actions
-Action oppDeflect = (gamestate.lastMove("p2") == cooperate) then deflect;
-Action oppCooperate = (gamestate.lastMove("p2") == deflect) then cooperate;
+Action oppDefect = (gamestate.lastMove("p2") == cooperate) then cooperate;
+Action oppCooperate = (gamestate.lastMove("p2") == defect) then defect;
 Action turn = (gamestate.turn == 1) then cooperate;
-Action otherwise = () then deflect;
+Action otherwise = () then defect;
 
 Strategy aStrat1 = [
-    oppDeflect,
+    oppDefect,
     oppCooperate,
     turn
 ];
 
 Strategy aStrat2 = [
-    turn,
     otherwise
 ];
 
 Strategyspace stratspace = [
     (cooperate, cooperate),
-    (deflect, cooperate),
-    (cooperate, deflect),
-    (deflect, deflect)
+    (defect, cooperate),
+    (cooperate, defect),
+    (defect, defect)
 ];
 
 Payoff payoff = [
