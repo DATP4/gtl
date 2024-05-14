@@ -19,7 +19,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         Outputfile.Add("use library::{Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy, Strategyspace};");
         Outputfile.Add("fn main()\n{");
 
-        Outputfile.Add("let gamestate: GameState = GameState::new();");
+        Outputfile.Add("let mut gamestate: GameState = GameState::new();");
 
         // Program consists of statements only, so we iterate them
         foreach (var stmt in context.statement())
@@ -310,17 +310,17 @@ public class TransVisitor : GtlBaseVisitor<object>
         if (id.Equals("lastMove"))
         {
             returnString += GtlDictionary.Translate("Functions", "last_move");
-            returnString += $"(&gamestate, {context.arg_call().expr()[0].GetText()}.to_string())";
+            returnString += $"(&gamestate, &{context.arg_call().expr()[0].GetText()}.to_string())";
         }
         else if (id.Equals("moveAtTurn"))
         {
             returnString += GtlDictionary.Translate("Functions", "move_at_turn");
-            returnString += $"(&gamestate, {context.arg_call().expr()[0].GetText()}.to_string(), {context.arg_call().expr(1)})";
+            returnString += $"(&gamestate, &{context.arg_call().expr()[0].GetText()}.to_string(), {context.arg_call().expr(1)})";
         }
         else if (id.Equals("playerScore"))
         {
             returnString += GtlDictionary.Translate("Functions", "player_score");
-            returnString += $"(&gamestate, {context.arg_call().expr()[0].GetText()}.to_string(), {context.arg_call().expr(1)})";
+            returnString += $"(&gamestate, &{context.arg_call().expr()[0].GetText()}.to_string(), {context.arg_call().expr(1)})";
         }
         else if (id.Equals("turn"))
         {
@@ -477,10 +477,10 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitGame_tuple([NotNull] GtlParser.Game_tupleContext context)
     {
         string returnString = "";
-        returnString += "game_state: gamestate,\n";
-        returnString += "strat_space: " + context.ID()[0].GetText() + ",\n";
-        returnString += "players: " + context.ID()[1].GetText() + ",\n";
-        returnString += "pay_matrix: " + context.ID()[2].GetText() + ",\n";
+        returnString += "game_state: &mut gamestate,\n";
+        returnString += "strat_space: &" + context.ID()[0].GetText() + ",\n";
+        returnString += "players: &" + context.ID()[1].GetText() + ",\n";
+        returnString += "pay_matrix: &" + context.ID()[2].GetText() + ",\n";
         return returnString;
 
     }

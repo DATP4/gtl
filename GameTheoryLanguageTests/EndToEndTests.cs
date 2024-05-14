@@ -121,11 +121,11 @@ public class EndToEndTests
     private void ProgramTest()
     {
         string test1 = Readtest("test1");
-        Createtest(test1, "assert_eq!(finishedgame.game_state.turn, 6);\nassert_eq!(finishedgame.game_state.player_score(\"p1\".to_string()), 17);\nassert_eq!(finishedgame.game_state.player_score(\"p2\".to_string()), 1);", "program");
+        Createtest(test1, "assert_eq!(finishedgame.turn, 6);\nassert_eq!(finishedgame.player_score(&\"p1\".to_string()), 17);\nassert_eq!(finishedgame.player_score(&\"p2\".to_string()), 1);", "program");
         string test2 = Readtest("test2");
         Createtest(test2, "assert_eq!(a, 5);\nassert_eq!(b, 1);\nassert_eq!(c, 17);", "program");
         string test3 = Readtest("test3");
-        Createtest(test3, "assert_eq!(finishedgame.game_state.turn, 6);\nassert_eq!(finishedgame.game_state.player_score(\"p1\".to_string()), 12);\nassert_eq!(finishedgame.game_state.player_score(\"p2\".to_string()), 7);\nassert_eq!(finishedgame.game_state.player_score(\"p3\".to_string()), 7);", "program");
+        Createtest(test3, "assert_eq!(finishedgame.turn, 6);\nassert_eq!(finishedgame.player_score(&\"p1\".to_string()), 12);\nassert_eq!(finishedgame.player_score(&\"p2\".to_string()), 7);\nassert_eq!(finishedgame.player_score(&\"p3\".to_string()), 7);", "program");
     }
     private void Createtest(string input, string output, string testtype)
     {
