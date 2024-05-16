@@ -6,17 +6,18 @@ grammar Gtl;
 
 // Start of the program
 program
-    : (statement)+ EOF
+    : (statement)* (game_variable_declaration)+ (game_functions)+  EOF
     ;
 
 // Statements
 statement
-    : expr ';'
-    | declaration ';'
+    : declaration
     | function
-    | game_variable_declaration ';'
-    | game_functions ';'
     | print ';'
+    ;
+
+block
+    : (function | declaration)* expr 
     ;
 
 // Expressions
@@ -45,12 +46,12 @@ expr
 
 // Declarations
 declaration
-    : type ID '=' expr
+    : type ID '=' expr ';'
     ;
 
 // Functions
 function
-    : ID ':' '(' arg_def ')' '->' type '{' (statement)* '}'
+    : ID ':' '(' arg_def ')' '->' type '{' block '}'
     ;
 
 // Literals
@@ -64,15 +65,15 @@ boolean_literal
 
 // Control structures
 ifElse
-    : IF '(' expr ')' THEN '{' (statement)+ '}' elseif* else
+    : IF '(' expr ')' THEN '{' block '}' elseif* else
     ;
 
 elseif
-    : ELSE IF '(' expr ')' THEN '{' (statement)+ '}'
+    : ELSE IF '(' expr ')' THEN '{' block '}'
     ;
 
 else
-    : ELSE '{' (statement)* '}'
+    : ELSE '{' block '}'
     ;
 
 // Argument definitions
@@ -110,7 +111,7 @@ method_access
 // Game theory specific grammar
 
 game_variable_declaration
-    : game_type ID '=' game_expr
+    : game_type ID '=' game_expr ';'
     ;
 
 game_expr
@@ -140,7 +141,7 @@ move
     ;
 
 game_functions
-    : RUN '(' ID',' expr ')'
+    : RUN '(' ID',' expr ')' ';'
     ;
 print
     : PRINT'('expr')'

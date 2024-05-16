@@ -9,21 +9,21 @@ intFunction : (int aVar) -> int {
 
     if (x < 10 * 5) then {
         int z = 10 / 5;
+        z
     }
     else if (x == 10) then {
-        x MOD 2;
+        x MOD 2
     }
     else {
         int z = 10 * 5;
-    };
-
-    x - 5;
+        z
+    }
 }
 
-intFunction(someVar);
+int funcTest = intFunction(someVar);
 
 boolFunction : () -> bool {
-    TRUE;
+    TRUE
 }
 
 bool a = boolFunction();

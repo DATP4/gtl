@@ -77,13 +77,13 @@ public class TranspilerTests
     [TestMethod]
     public void IfElseTest()
     {
-        string input1 = "if (TRUE) then {int x = 4;} else {int y = 5;};";
-        string input2 = "if (TRUE) then {int x = 4; x;} else if (FALSE) then {int y = 5; y;} else {int z = 6; z;};";
-        string input3 = "if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 4;} else {int z = 4;};";
-        string input4 = "int x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3;} else {int z = 2;};";
-        string input5 = "real x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3;} else {int z = 2;};";
+        string input1 = "if (TRUE) then {int x = 4;} else {int y = 5; y};";
+        string input2 = "if (TRUE) then {int x = 4; x;} else if (FALSE) then {int y = 5; y} else {int z = 6; z};";
+        string input3 = "if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 4; y} else {int z = 4; z};";
+        string input4 = "int x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3; y} else {int z = 2; z};";
+        string input5 = "real x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3; y} else {int z = 2; z};";
 
-        string output1 = "if true {let x = 4;x} else {let y = 5;y};";
+        string output1 = "if true {let x = 4;x} else {let y = 5; y};";
         string output2 = "if true {let x = 4;x} else if false {let y = 5;y} else {let z = 6;z};";
         string output3 = "if true {let x = 4;x} else if false {let y = 4;y} else {let z = 4;z};";
         string output4_5 = "let x = if true {let x = 4;x} else if false {let y = 3;y} else {let z = 2;z};";

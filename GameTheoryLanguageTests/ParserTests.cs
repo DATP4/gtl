@@ -10,12 +10,12 @@ public class ParserTests
     [TestMethod]
     public void DeclarationTest()
     {
-        string input1 = "int x = 5;";
-        string input2 = "bool z = TRUE;";
-        string input3 = "real y = 5.0;";
-        string input4 = "dsa z = 5;";
-        string input5 = "int x = 5";
-        string input6 = "int x = int y = 5;";
+        string input1 = "int x = 5; Action oppDeflect = (TRUE) then deflect; run(ID, 1);";
+        string input2 = "bool z = TRUE; Action a = () then cooperate; run(ID, 1);";
+        string input3 = "real y = 5.0; Action a = () then cooperate; run(ID, 1);";
+        string input4 = "dsa z = 5; Action a = () then cooperate; run(ID, 1);";
+        string input5 = "int x = 5 Action a = () then cooperate; run(ID, 1);";
+        string input6 = "int x = int y = 5; Action a = () then cooperate; run(ID, 1);";
 
         AssertTrue(input1);
         AssertTrue(input2);
@@ -27,10 +27,10 @@ public class ParserTests
     [TestMethod]
     public void BinaryexpressionTest()
     {
-        string input1 = "-5 + 5;";
-        string input2 = "(-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
-        string input3 = "((()());";
-        string input4 = "5 - + 5;";
+        string input1 = "int x = -5 + 5; Action a = () then cooperate; run(ID, 1);";
+        string input2 = "int x = (-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3); Action a = () then cooperate; run(ID, 1);";
+        string input3 = "int x = ((()()); Action a = () then cooperate; run(ID, 1);";
+        string input4 = "int x = 5 - + 5; Action a = () then cooperate; run(ID, 1);";
 
         AssertTrue(input1);
         AssertTrue(input2);
@@ -41,14 +41,14 @@ public class ParserTests
     [TestMethod]
     public void BooleanTest()
     {
-        string input1 = "TRUE && FALSE;";
-        string input2 = "TRUE || FALSE;";
-        string input3 = "TRUE == FALSE;";
-        string input4 = "TRUE ^^ FALSE;";
-        string input5 = "1 < 3;";
-        string input6 = "(TRUE && TRUE) || ((TRUE && TRUE) == TRUE);";
-        string input7 = "1 => 3;";
-        string input8 = "TRUE ^^ FALSE";
+        string input1 = "bool x = TRUE && FALSE; Action a = () then cooperate; run(ID, 1);";
+        string input2 = "bool x = TRUE || FALSE; Action a = () then cooperate; run(ID, 1);";
+        string input3 = "bool x = TRUE == FALSE; Action a = () then cooperate; run(ID, 1);";
+        string input4 = "bool x = TRUE ^^ FALSE; Action a = () then cooperate; run(ID, 1);";
+        string input5 = "bool x = 1 < 3; Action a = () then cooperate; run(ID, 1);";
+        string input6 = "bool x = (TRUE && TRUE) || ((TRUE && TRUE) == TRUE); Action a = () then cooperate; run(ID, 1);";
+        string input7 = "bool x = 1 => 3; Action a = () then cooperate; run(ID, 1);";
+        string input8 = "bool x = TRUE ^^ FALSE; Action a = () then cooperate; run(ID, 1);";
 
         AssertTrue(input1);
         AssertTrue(input2);
@@ -62,10 +62,10 @@ public class ParserTests
     [TestMethod]
     public void FunctionTest()
     {
-        string input1 = "function : (int a) -> int {a + 1;}";
-        string input2 = "function : () -> int {5;}";
+        string input1 = "function : (int a) -> int {a + 1}";
+        string input2 = "function : () -> int {5}";
         string input3 = "function : (int a, bool b, real c, int d, bool e, real f) -> bool {}";
-        string input4 = "function : ( -> real {4;}";
+        string input4 = "function : ( -> real {4}";
         string input5 = "function : (int a, int b, int c, int d) -> das {}";
 
         AssertTrue(input1);
@@ -77,12 +77,12 @@ public class ParserTests
     [TestMethod]
     public void IfElseTest()
     {
-        string input1 = "if (TRUE) then {a;} else {a;};";
-        string input2 = "if (TRUE) then {a;} else if (TRUE) then {a;} else {a;};";
-        string input3 = "if (TRUE) {a;} else {a;};";
-        string input4 = "if (TRUE) then {a;}";
-        string input5 = "if (TRUE) then {a;} else if (TRUE) then {a;}";
-        string input6 = "if () then {a;} else {a;};";
+        string input1 = "if (TRUE) then {a;} else {a};";
+        string input2 = "if (TRUE) then {a;} else if (TRUE) then {a;} else {a};";
+        string input3 = "if (TRUE) {a;} else {a};";
+        string input4 = "if (TRUE) then {a}";
+        string input5 = "if (TRUE) then {a} else if (TRUE) then {a}";
+        string input6 = "if () then {a;} else {a};";
 
         AssertTrue(input1);
         AssertTrue(input2);

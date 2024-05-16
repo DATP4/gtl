@@ -27,6 +27,16 @@ public class TransVisitor : GtlBaseVisitor<object>
             retString += Visit(stmt);
             retString += "\n";
         }
+        foreach (var game_stmt in context.game_variable_declaration())
+        {
+            retString += Visit(game_stmt);
+            retString += "\n";
+        }
+        foreach (var game_fun in context.game_functions())
+        {
+            retString += Visit(game_fun);
+            retString += "\n";
+        }
         // Everything we visit but this, will return a string. We add it to our output rust file
         if (retString != null)
         {
@@ -45,10 +55,6 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         string retString = null!;
         // We need all the if statements to follow the semicolon convention
-        if (context.expr() != null)
-        {
-            retString += Visit(context.expr()) + ";";
-        }
         if (context.declaration() != null)
         {
             retString += Visit(context.declaration()) + ";";
@@ -56,14 +62,6 @@ public class TransVisitor : GtlBaseVisitor<object>
         if (context.function() != null)
         {
             retString += Visit(context.function());
-        }
-        if (context.game_variable_declaration() != null)
-        {
-            retString += Visit(context.game_variable_declaration()) + ";";
-        }
-        if (context.game_functions() != null)
-        {
-            retString += Visit(context.game_functions()) + ";";
         }
         if (context.print() != null)
         {
@@ -122,112 +120,64 @@ public class TransVisitor : GtlBaseVisitor<object>
         return $"{left} {op} {right}";
     }
 
+    public override object VisitBlock([NotNull] GtlParser.BlockContext context)
+    {
+        string retBlockString = "";
+        foreach (var func in context.function())
+        {
+            retBlockString += (string)Visit(func);
+        }
+        foreach (var dec in context.declaration())
+        {
+            retBlockString += (string)Visit(dec);
+        }
+        retBlockString += (string)Visit(context.expr());
+        return retBlockString;
+    }
+
 
     public override object VisitIfElse([NotNull] GtlParser.IfElseContext context)
     {
-        // Placeholder to check if the  statement is a declaration
-        GtlParser.StatementContext lastStmt = null!;
         // Beginning of if
         string retIfString = $"if {Visit(context.expr())} {'{'}\n";
 
-        // Finds last non-function statement of the function
-        foreach (var stmt in context.statement().Reverse())
+        // appends all functions and declarations to the if block
+        foreach (var func in context.block().function())
         {
-            if (stmt.function() == null)
-            {
-                lastStmt = stmt;
-                break;
-            }
+            retIfString += Visit(func);
         }
-        // Appending all content of the if body
-        foreach (var stmt in context.statement())
+        foreach (var dec in context.block().declaration())
         {
-            if (stmt == lastStmt && lastStmt.declaration() != null)
-            {
-                retIfString += Visit(stmt);
-            }
-            else if (stmt != lastStmt)
-            {
-                retIfString += Visit(stmt);
-            }
+            retIfString += Visit(dec);
         }
-        // Ensures that the last statment is returnable
-        // As rust can't return declarations, we return the id of the declaration on the next line
-        if (lastStmt.declaration() != null)
-        {
-            retIfString += lastStmt.declaration().ID().GetText();
-        }
-        else
-        {
-            retIfString += Visit(lastStmt); // Ensures that the last non-function statement is returned
-            retIfString = retIfString.Remove(retIfString.Length - 1, 1); // Removes the semicolon added from VisitStatement
-        }
+        retIfString += Visit(context.block().expr());
 
         // Repeat above process for the else if blocks
         foreach (var elseIfBlock in context.elseif())
         {
             retIfString += $"\n{'}'} else if {Visit(elseIfBlock.expr())} {'{'}\n";
-            foreach (var stmt in elseIfBlock.statement().Reverse())
+            foreach (var func in elseIfBlock.block().function())
             {
-                if (stmt.function() == null)
-                {
-                    lastStmt = stmt;
-                    break;
-                }
+                retIfString += Visit(func);
             }
-            foreach (var stmt in elseIfBlock.statement())
+            foreach (var dec in elseIfBlock.block().declaration())
             {
-                if (stmt == lastStmt && lastStmt.declaration() != null)
-                {
-                    retIfString += Visit(stmt);
-                }
-                else if (stmt != lastStmt)
-                {
-                    retIfString += Visit(stmt);
-                }
+                retIfString += Visit(dec);
             }
-            if (lastStmt.declaration() != null)
-            {
-                retIfString += lastStmt.declaration().ID().GetText();
-            }
-            else
-            {
-                retIfString += Visit(lastStmt);
-                retIfString = retIfString.Remove(retIfString.Length - 1, 1);
-            }
+            retIfString += Visit(elseIfBlock.block().expr());
         }
 
         // Repeats the process for the final else block
         retIfString += "\n} else {\n";
-        foreach (var stmt in context.@else().statement().Reverse())
+        foreach (var func in context.@else().block().function())
         {
-            if (stmt.function() == null)
-            {
-                lastStmt = stmt;
-                break;
-            }
+            retIfString += (string)Visit(func);
         }
-        foreach (var stmt in context.@else().statement())
+        foreach (var dec in context.@else().block().declaration())
         {
-            if (stmt == lastStmt && lastStmt.declaration() != null)
-            {
-                retIfString += Visit(stmt);
-            }
-            else if (stmt != lastStmt)
-            {
-                retIfString += Visit(stmt);
-            }
+            retIfString += (string)Visit(dec);
         }
-        if (lastStmt.declaration() != null)
-        {
-            retIfString += lastStmt.declaration().ID().GetText();
-        }
-        else
-        {
-            retIfString += Visit(lastStmt);
-            retIfString = retIfString.Remove(retIfString.Length - 1, 1);
-        }
-        retIfString += "\n}\n";
+        retIfString += (string)Visit(context.@else().block().expr()) + "}\n";
         return retIfString;
     }
 
@@ -237,7 +187,6 @@ public class TransVisitor : GtlBaseVisitor<object>
         EnterScope(new Scope()); // Meanwhile creates a new scope (useful if we were to enter nested scopes)
 
         string retFnString = $"fn {context.ID()}";
-        GtlParser.StatementContext lastStmt = null!;
 
         // We only visit the arguments if there are any
         if (context.arg_def().ChildCount != 0)
@@ -255,16 +204,6 @@ public class TransVisitor : GtlBaseVisitor<object>
         // Function return type
         retFnString += $" -> {GtlDictionary.Translate("Type", context.type().GetText())} {'{'}\n";
 
-        // Finds last non-function statement of the function
-        foreach (var stmt in context.statement().Reverse())
-        {
-            if (stmt.function() == null)
-            {
-                lastStmt = stmt;
-                break;
-            }
-        }
-
         //// Body of function
         // First we add all missing variables from the outer scope
         foreach (var v in missingVariables)
@@ -273,29 +212,15 @@ public class TransVisitor : GtlBaseVisitor<object>
         }
 
         // Adds all other statements of the body
-        foreach (var stmt in context.statement())
+        foreach (var func in context.block().function())
         {
-            if (stmt == lastStmt && lastStmt.declaration() != null)
-            {
-                retFnString += Visit(stmt);
-            }
-            else if (stmt != lastStmt)
-            {
-                retFnString += Visit(stmt);
-            }
+            retFnString += Visit(func);
         }
-
-        // Ensures that the last statment is returnable
-        // As rust can't return declarations, we return the id of the declaration on the next line
-        if (lastStmt.declaration() != null)
+        foreach (var dec in context.block().declaration())
         {
-            retFnString += lastStmt.declaration().ID().GetText();
+            retFnString += Visit(dec);
         }
-        else
-        {
-            retFnString += Visit(lastStmt); // Ensures that the last non-function statement is returned
-            retFnString = retFnString.Remove(retFnString.Length - 1, 1); // Removes the semicolon added from VisitStatement
-        }
+        retFnString += Visit(context.block().expr());
 
         retFnString += "\n}";
         ExitFunctionScope();
@@ -364,6 +289,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         returnString += $"{context.ID().GetText()}, ";
         string val = (string)Visit(context.expr());
         returnString += "&mut " + val + ")";
+        returnString += ";";
         return returnString;
     }
 
@@ -400,10 +326,10 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
     {
         // Adds a the variable declared to the vtable of the current scope.
-        GetCurrentScope().AddVariable(context.ID().GetText(), context.expr().GetText());
+        GetCurrentScope().AddVariable(context.ID().GetText(), (string)Visit(context.expr()));
 
         // No need for type declaration in rust, due to our typechecking prior to transpiling.
-        return $"let {context.ID().GetText()} = {Visit(context.expr())}\n";
+        return $"let {context.ID().GetText()} = {Visit(context.expr())};\n";
     }
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
@@ -413,7 +339,7 @@ public class TransVisitor : GtlBaseVisitor<object>
             returnString += $"let mut {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
             returnString += "{\n";
             returnString += Visit(context.game_expr().game_tuple());
-            returnString += "}\n";
+            returnString += "};\n";
             return returnString;
         }
         returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
@@ -454,7 +380,7 @@ public class TransVisitor : GtlBaseVisitor<object>
             WriteToMoves(moves);
             return null!;
         }
-        returnString += "}\n";
+        returnString += "};\n";
         return returnString;
     }
     public override object VisitAction([NotNull] GtlParser.ActionContext context)
