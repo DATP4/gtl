@@ -5,13 +5,13 @@ fn main()
 {
 let mut gamestate: GameState = GameState::new();
 let someVar = 3;
-;
+
 let x = 5;
-;
+
 let dasdsa = "dsadas";
-;
-println!("{:?}", dasdsa)
-;
+
+println!("{:?}", dasdsa);
+
 fn intFunction(aVar: &i32) -> i32 {
 let someVar = 3;
 let x = 5;
@@ -28,7 +28,7 @@ z}
 
 }
 let funcTest = intFunction(&(someVar));
-;
+
 fn boolFunction() -> bool {
 let someVar = 3;
 let x = 5;
@@ -37,18 +37,18 @@ let funcTest = intFunction(&(someVar));
 true
 }
 let a = boolFunction();
-;
+
 
 let oppDeflect: Action = Action{
 condition: Condition::Expression(BoolExpression {
 b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::cooperate}),
-act_move: Moves::deflect,
+act_move: Moves::cooperate,
 };
 
 let oppCooperate: Action = Action{
 condition: Condition::Expression(BoolExpression {
 b_val: |gamestate: &GameState| GameState::last_move(&gamestate, &"p2".to_string()) == Moves::deflect}),
-act_move: Moves::cooperate,
+act_move: Moves::deflect,
 };
 
 let turn: Action = Action{

@@ -112,6 +112,7 @@ method_access
 
 game_variable_declaration
     : game_type ID '=' game_expr ';'
+    | T_MOVES '=' array ';'
     ;
 
 game_expr
@@ -158,7 +159,6 @@ type
 game_type
     : T_GAME
     | T_PLAYERS
-    | T_MOVES
     | T_PAYOFF
     | T_STRATEGY
     | T_STRATEGYSPACE

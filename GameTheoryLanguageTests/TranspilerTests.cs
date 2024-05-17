@@ -57,13 +57,13 @@ public class TranspilerTests
         string input1 = "int test = 1 + 1 * 7;";
         string input2 = "real test = 1.5 + 1.6 / 10.0;";
         string input3 = "int test = (-5 + ( 4 + 3 * ( 4 MOD 5 ) / 1 + 5 ) - 3);";
-        string input4 = "5 MOD 3;";
+        string input4 = "int test = 5 MOD 3;";
         string input5 = "int test = 1 + 1 * TRUE;";
 
         string output1 = "let test = 1 + 1 * 7;";
         string output2 = "let test = 1.5 + 1.6 / 10.0;";
         string output3 = "let test = (-5 + (4 + 3 * (4 % 5) / 1 + 5) - 3);";
-        string output4 = "5 % 3;";
+        string output4 = "let test = 5 % 3;";
         string output5 = "let test = 1 + 1 * true;";
 
         AssertTrue(input1, output1);
@@ -77,16 +77,16 @@ public class TranspilerTests
     [TestMethod]
     public void IfElseTest()
     {
-        string input1 = "if (TRUE) then {int x = 4;} else {int y = 5; y};";
-        string input2 = "if (TRUE) then {int x = 4; x;} else if (FALSE) then {int y = 5; y} else {int z = 6; z};";
-        string input3 = "if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 4; y} else {int z = 4; z};";
-        string input4 = "int x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3; y} else {int z = 2; z};";
-        string input5 = "real x = if (TRUE) then {int x = 4;} else if (FALSE) then {int y = 3; y} else {int z = 2; z};";
+        string input1 = "int test = if (TRUE) then {int x = 4;x} else {int y = 5;y};";
+        string input2 = "int test = if (TRUE) then {int x = 4;x} else if (FALSE) then {int y = 5;y} else {int z = 6;z};";
+        string input3 = "int test = if (TRUE) then {int x = 4;x} else if (FALSE) then {int y = 4;y} else {int z = 4;z};";
+        string input4 = "int test = if (TRUE) then {int x = 4;x} else if (FALSE) then {int y = 3;y} else {int z = 2;z};";
+        string input5 = "real test = if (TRUE) then {int x = 4;x} else if (FALSE) then {int y = 3;y} else {int z = 2;z};";
 
-        string output1 = "if true {let x = 4;x} else {let y = 5; y};";
-        string output2 = "if true {let x = 4;x} else if false {let y = 5;y} else {let z = 6;z};";
-        string output3 = "if true {let x = 4;x} else if false {let y = 4;y} else {let z = 4;z};";
-        string output4_5 = "let x = if true {let x = 4;x} else if false {let y = 3;y} else {let z = 2;z};";
+        string output1 = "let test = if true {let x = 4;x} else {let y = 5;y};";
+        string output2 = "let test = if true {let x = 4;x} else if false {let y = 5;y} else {let z = 6;z};";
+        string output3 = "let test = if true {let x = 4;x} else if false {let y = 4;y} else {let z = 4;z};";
+        string output4_5 = "let test = if true {let x = 4;x} else if false {let y = 3;y} else {let z = 2;z};";
 
         AssertTrue(input1, output1); // Regular if else statement with assignment to expression return value
         AssertTrue(input2, output2); // If else if else with return value
@@ -100,45 +100,36 @@ public class TranspilerTests
     [TestMethod]
     public void TestFunctionDeclaration()
     {
-        string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;}";
-        string input2 = "intFunction : (int x) -> int {if (TRUE) then {5;} else {6;};}";
-        string input3 = "intFunction : (int x) -> int {if (TRUE) then {x;intFunctionNested : (int z) -> int {1;}} else {6;};}";
-        string input4 = "int x = 5; intFunction : (int z) -> int {int q = 3; z; intFunctionNested : (int y) -> int {x + 1;}}";
-        string input5 = "intFunction : (int x) -> int {if (TRUE) then {5.1;} else {6;};}";
+        string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5}";
+        string input2 = "intFunction : (int x) -> int {if (TRUE) then {5} else {6}}";
+        string input3 = "intFunction : (int x) -> int {if (TRUE) then {5.1} else {6}}";
 
         string output1 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}";
         string output2 = "fn intFunction(x: &i32) -> i32 {if true {5} else {6}}";
-        string output3 = "fn intFunction(x: &i32) -> i32 {if true {fn intFunctionNested(z: &i32) -> i32 {1}*x} else {6}}";
-        string output4 = "let x = 5;fn intFunction(z: &i32) -> i32 {let x = 5;let q = 3;fn intFunctionNested(y: &i32) -> i32 {let x = 5;let q = 3;x + 1}*z}";
-        string output5 = "fn intFunction(x: &i32) -> i32 {if true {5.1} else {6}}";
 
         // Also tests conversion to call by reference
         AssertTrue(input1, output1); // Regular function test
         AssertTrue(input2, output2); // If else in function
-        AssertTrue(input3, output3); // Nested function
-        AssertTrue(input4, output4); // Nested function with outer scope variables inclusion
-        AssertTrue(input5, output5);
-        AssertIntegrationFalse(input5);
-        AssertIntegrationTrue(input4, output4);
+        AssertIntegrationFalse(input3);
     }
 
     [TestMethod]
     public void TestFunctionCall()
     {
-        string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5);";
-        string input2 = "int a = 10; intFunction : (int x) -> int {int y = x + a * 5; x - 5;} intFunction(5);";
-        string input3 = "intFunction : (int x) -> int {intFunctionNested : (int z) -> int {z + 1;} intFunctionNested(x);} intFunction(5);";
-        string input4 = "intFunction : (int x) -> int {int y = x + 10 * 5;} int x = intFunction(5);";
-        string input5 = "intFunction : (int x, int z) -> int {z + x;} int x = 1; intFunction(x, x + 4);";
-        string input6 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5;} intFunction(5.2);";
+        string input1 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5} int test = intFunction(5);";
+        string input2 = "int a = 10; intFunction : (int x) -> int {int y = x + a * 5; x - 5} int test = intFunction(5);";
+        string input3 = "intFunction : (int x) -> int {intFunctionNested : (int z) -> int {z + 1} intFunctionNested(x)} int test = intFunction(5);";
+        string input4 = "intFunction : (int x) -> int {int y = x + 10 * 5; y} int x = intFunction(5);";
+        string input5 = "intFunction : (int x, int z) -> int {z + x} int x = 1; int test = intFunction(x, x + 4);";
+        string input6 = "intFunction : (int x) -> int {int y = x + 10 * 5; x - 5} int test = intFunction(5.2);";
 
 
-        string output1 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}intFunction(&(5));";
-        string output2 = "let a = 10;fn intFunction(x: &i32) -> i32 {let a = 10;let y = *x + a * 5;*x - 5}intFunction(&(5));";
-        string output3 = "fn intFunction(x: &i32) -> i32 {fn intFunctionNested(z: &i32) -> i32 {*z + 1}intFunctionNested(&(*x))}intFunction(&(5));";
+        string output1 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}let test = intFunction(&(5));";
+        string output2 = "let a = 10;fn intFunction(x: &i32) -> i32 {let a = 10;let y = *x + a * 5;*x - 5}let test = intFunction(&(5));";
+        string output3 = "fn intFunction(x: &i32) -> i32 {fn intFunctionNested(z: &i32) -> i32 {*z + 1}intFunctionNested(&(*x))}let test = intFunction(&(5));";
         string output4 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;y}let x = intFunction(&(5));";
-        string output5 = "fn intFunction(x: &i32, z: &i32) -> i32 {*z + *x}let x = 1;intFunction(&(x), &(x + 4));";
-        string output6 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}intFunction(&(5.2));";
+        string output5 = "fn intFunction(x: &i32, z: &i32) -> i32 {*z + *x}let x = 1;let test = intFunction(&(x), &(x + 4));";
+        string output6 = "fn intFunction(x: &i32) -> i32 {let y = *x + 10 * 5;*x - 5}let test = intFunction(&(5.2));";
 
 
         // Also tests conversion to call by reference

@@ -236,7 +236,7 @@ impl<'a> Game<'_> {
     }
 
     pub fn run_game(&mut self, turns: &i32) {
-        if *turns == 0 {
+        if *turns == 1 {
             return;
         }
 

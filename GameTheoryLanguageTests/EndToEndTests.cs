@@ -84,18 +84,18 @@ public class EndToEndTests
     }
     private void IfElseTest()
     {
-        Createtest("int y = if (TRUE) then {int x = 4;} else {int x = 5;};", "assert_eq!(y, 4)", "if_else");
-        Createtest("int y = if (FALSE) then {int x = 4;} else {int x = 5;};", "assert_eq!(y, 5)", "if_else");
-        Createtest("int y = if (TRUE) then {int x = 4;} else if (TRUE) then {int x = 5;} else {int x = 6;};", "assert_eq!(y, 4)", "if_else");
-        Createtest("int y = if (FALSE) then {int x = 4;} else if (TRUE) then {int x = 5;} else {int x = 6;};", "assert_eq!(y, 5)", "if_else");
-        Createtest("int y = if (FALSE) then {int x = 4;} else if (FALSE) then {int x = 5;} else {int x = 6;};", "assert_eq!(y, 6)", "if_else");
+        Createtest("int y = if (TRUE) then {int x = 4; x} else {int x = 5; x};", "assert_eq!(y, 4)", "if_else");
+        Createtest("int y = if (FALSE) then {int x = 4; x} else {int x = 5;x };", "assert_eq!(y, 5)", "if_else");
+        Createtest("int y = if (TRUE) then {int x = 4; x} else if (TRUE) then {int x = 5; x} else {int x = 6; x};", "assert_eq!(y, 4)", "if_else");
+        Createtest("int y = if (FALSE) then {int x = 4; x} else if (TRUE) then {int x = 5; x} else {int x = 6; x};", "assert_eq!(y, 5)", "if_else");
+        Createtest("int y = if (FALSE) then {int x = 4; x} else if (FALSE) then {int x = 5; x} else {int x = 6; x};", "assert_eq!(y, 6)", "if_else");
     }
     private void FunctionTest()
     {
-        Createtest("int_function : (int x) -> int {int y = x + 10 * 5; y - 5;} int x = int_function(5);", "assert_eq!(x, 50)", "function");
-        Createtest("int a = 10; int_function1 : (int x) -> int {int y = x + a * 5; y - 5;} int x = int_function1(5);", "assert_eq!(x, 50)", "function");
-        Createtest("int_function : (int x) -> int {int_function2 : (int z) -> int {z + 5;} int y = int_function2(x);} int x = int_function(5);", "assert_eq!(x, 10)", "function");
-        Createtest("int a = 10 + 5; int b = 5 + 13; int c = a * b; int_function : (int x) -> int {c + x;} int x = int_function(10);", "assert_eq!(x, 280)", "function");
+        Createtest("int_function : (int x) -> int {int y = x + 10 * 5; y - 5} int x = int_function(5);", "assert_eq!(x, 50)", "function");
+        Createtest("int a = 10; int_function1 : (int x) -> int {int y = x + a * 5; y - 5} int x = int_function1(5);", "assert_eq!(x, 50)", "function");
+        Createtest("int_function : (int x) -> int {int_function2 : (int z) -> int {z + 5} int y = int_function2(x); y} int x = int_function(5);", "assert_eq!(x, 10)", "function");
+        Createtest("int a = 10 + 5; int b = 5 + 13; int c = a * b; int_function : (int x) -> int {c + x} int x = int_function(10);", "assert_eq!(x, 280)", "function");
     }
     private void ActionDeclarationTest()
     {
@@ -173,6 +173,16 @@ public class EndToEndTests
                 retString += Visit(stmt);
                 retString += "\n";
             }
+            foreach (var game_stmt in context.game_variable_declaration())
+            {
+                retString += Visit(game_stmt);
+                retString += "\n";
+            }
+            foreach (var game_fun in context.game_functions())
+            {
+                retString += Visit(game_fun);
+                retString += "\n";
+            }
             // Everything we visit but this, will return a string. We add it to our output rust file
             if (retString != null)
             {
@@ -191,7 +201,7 @@ public class EndToEndTests
             returnString += "Game::run(&mut ";
             returnString += $"{context.ID().GetText()}, ";
             string val = (string)Visit(context.expr());
-            returnString += "&mut " + val + ")";
+            returnString += "&mut " + val + ");";
             return returnString;
         }
         public override void WriteToMoves(List<string> moves)

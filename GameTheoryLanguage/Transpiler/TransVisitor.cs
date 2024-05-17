@@ -57,7 +57,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         // We need all the if statements to follow the semicolon convention
         if (context.declaration() != null)
         {
-            retString += Visit(context.declaration()) + ";";
+            retString += Visit(context.declaration());
         }
         if (context.function() != null)
         {
@@ -65,7 +65,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         }
         if (context.print() != null)
         {
-            retString += Visit(context.print()) + ";";
+            retString += Visit(context.print());
         }
         return retString!;
     }
@@ -334,6 +334,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
         string returnString = "";
+        if (context.game_type() != null) {
         if (context.game_type().GetText().Equals("Game"))
         {
             returnString += $"let mut {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
@@ -365,12 +366,13 @@ public class TransVisitor : GtlBaseVisitor<object>
         {
             returnString += Visit(context.game_expr());
         }
-        if (context.game_type().GetText().Equals("Moves"))
+        } 
+        else if (context.T_MOVES().GetText().Equals("Moves"))
         {
             List<string> moves = new List<string>();
             moves.Add("#[derive(Copy, Clone, Debug, PartialEq)]\n");
             moves.Add("pub enum Moves {\n");
-            foreach (var move in context.game_expr().array().array_type())
+            foreach (var move in context.array().array_type())
             {
                 MovesList.Add(move.GetText() + ",\n");
                 moves.Add(move.GetText() + ",\n");
@@ -413,7 +415,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitPrint([NotNull] GtlParser.PrintContext context)
     {
         string expr = context.expr().GetText();
-        return "println!(\"{:?}\", " + expr + ")\n";
+        return "println!(\"{:?}\", " + expr + ");\n";
     }
     private object VisitStrategySpace([NotNull] GtlParser.ArrayContext context)
     {

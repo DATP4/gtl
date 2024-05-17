@@ -170,8 +170,9 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             _ = Visit(dec);
         }
 
+        string type = (string)Visit(context.block().expr());
         ExitScope();
-        return (string)Visit(context.block().expr());
+        return type;
     }
 
 
@@ -484,10 +485,20 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
         // firstly checks if the declaration declares moves, if so said moves are added to the vtable
-        string gametype = context.game_type().GetText();
-        if (gametype.Equals("Moves"))
+        string gametype = "";
+        string movesType = "";
+        if (context.game_type() != null)
         {
-            GtlParser.Array_typeContext[] moves = context.game_expr().array().array_type();
+            gametype = context.game_type().GetText();
+        }
+        if (context.T_MOVES() != null)
+        {
+            movesType = context.T_MOVES().GetText();
+        }
+
+        if (movesType != "" && movesType.Equals("Moves"))
+        {
+            GtlParser.Array_typeContext[] moves = context.array().array_type();
             foreach (GtlParser.Array_typeContext move in moves)
             {
                 ScopeStack.Peek().AddVariable(move.GetText(), "move");
