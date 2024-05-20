@@ -8,7 +8,7 @@ b,
 
 cooperate,
 
-deflect,
+defect,
 
 None,
 

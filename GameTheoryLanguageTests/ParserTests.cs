@@ -6,7 +6,7 @@ namespace GameTheoryLanguageTests;
 [TestClass]
 public class ParserTests
 {
-    public string ActionRunString = "Moves = [cooperate, deflect]; Action testaction = () then cooperate; run(id, 4);";
+    public string ActionRunString = "Moves = [cooperate, defect]; Action testaction = () then cooperate; run(id, 4);";
     public string RunString = "run(id, 4);";
     [TestMethod]
     public void DeclarationTest()
@@ -102,11 +102,11 @@ public class ParserTests
     [TestMethod]
     public void ActionTest()
     {
-        string input1 = "Action oppCooperate = (gamestate.lastMove(\"p2\") == deflect) then cooperate;" + RunString;
-        string input2 = "Action turn = (gamestate.turn == 4) then deflect;" + RunString;
-        string input3 = "Actio turn = (gamestate.turn == 4) then deflect;" + RunString;
-        string input4 = "Action turn = (gamestate.turn == 4) deflect;" + RunString;
-        string input5 = "int turn = (gamestate.turn == 4) deflect;" + RunString;
+        string input1 = "Action oppCooperate = (gamestate.lastMove(\"p2\") == defect) then cooperate;" + RunString;
+        string input2 = "Action turn = (gamestate.turn == 4) then defect;" + RunString;
+        string input3 = "Actio turn = (gamestate.turn == 4) then defect;" + RunString;
+        string input4 = "Action turn = (gamestate.turn == 4) defect;" + RunString;
+        string input5 = "int turn = (gamestate.turn == 4) defect;" + RunString;
 
         AssertTrue(input1);
         AssertTrue(input2);
@@ -136,12 +136,12 @@ public class ParserTests
     [TestMethod]
     public void StrategySpaceTest()
     {
-        string input1 = "Strategyspace stratspace = [(cooperate, cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + RunString;
-        string input2 = "strategyspace stratspace = [(cooperate, cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + RunString;
-        string input3 = "Strategyspace stratspace = [(cooperate, cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)]" + RunString;
-        string input4 = "Strategyspace stratspace = [(cooperate, cooperate)(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + RunString;
-        string input5 = "Strategyspace stratspace = [(cooperate cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + RunString;
-        string input6 = "int stratspace = [(cooperate cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + RunString;
+        string input1 = "Strategyspace stratspace = [(cooperate, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + RunString;
+        string input2 = "strategyspace stratspace = [(cooperate, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + RunString;
+        string input3 = "Strategyspace stratspace = [(cooperate, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)]" + RunString;
+        string input4 = "Strategyspace stratspace = [(cooperate, cooperate)(defect, cooperate),(cooperate, defect),(defect, defect)];" + RunString;
+        string input5 = "Strategyspace stratspace = [(cooperate cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + RunString;
+        string input6 = "int stratspace = [(cooperate cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + RunString;
 
         AssertTrue(input1);
         AssertFalse(input2);

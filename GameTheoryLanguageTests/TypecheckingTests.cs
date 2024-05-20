@@ -8,7 +8,7 @@ namespace GameTheoryLanguageTests;
 public class TypecheckingTests
 
 {
-    public string WholeGameString = "Moves = [cooperate, deflect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
+    public string WholeGameString = "Moves = [cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
     public string RunString = "run(id, 4);";
     [TestMethod]
     public void TestLiteral()
@@ -300,9 +300,9 @@ public class TypecheckingTests
     [TestMethod]
     public void TestStrategySpaceDeclaration()
     {
-        string input1 = "Moves = [deflect, cooperate]; Strategyspace stratspace = [(cooperate, cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + WholeGameString;
-        string input2 = "Strategyspace stratspace = [(cooperate, cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + WholeGameString;
-        string input3 = "int x = 5; Moves = [deflect, cooperate]; Strategyspace stratspace = [(x, cooperate),(deflect, cooperate),(cooperate, deflect),(deflect, deflect)];" + WholeGameString;
+        string input1 = "Moves = [defect, cooperate]; Strategyspace stratspace = [(cooperate, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + WholeGameString;
+        string input2 = "Strategyspace stratspace = [(cooperate, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + WholeGameString;
+        string input3 = "int x = 5; Moves = [defect, cooperate]; Strategyspace stratspace = [(x, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + WholeGameString;
 
         AssertTrue(input1);
         AssertFalse<VariableNotFoundException>(input2);

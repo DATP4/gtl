@@ -3,6 +3,8 @@ int x = 5;
 str dasdsa = "dsadas";
 print(dasdsa);
 
+bool test23 = TRUE ^^ TRUE;
+
 // Nonsensical function;
 intFunction : (int aVar) -> int {
     int y = x + 10 * 5;
@@ -28,30 +30,29 @@ boolFunction : () -> bool {
 
 bool a = boolFunction();
 
-Moves = [cooperate, deflect];
+Moves = [cooperate, defect];
 
 // Declare actions
-Action oppDeflect = (gamestate.lastMove("p2") == cooperate) then cooperate;
-Action oppCooperate = (gamestate.lastMove("p2") == deflect) then deflect;
+Action oppDefect = (gamestate.lastMove("p2") == cooperate) then cooperate;
+Action oppCooperate = (gamestate.lastMove("p2") == defect) then defect;
 Action turn = (gamestate.turn == 1) then cooperate;
-Action otherwise = () then deflect;
+Action otherwise = () then defect;
 
 Strategy aStrat1 = [
-    oppDeflect,
+    oppDefect,
     oppCooperate,
     turn
 ];
 
 Strategy aStrat2 = [
-    turn,
     otherwise
 ];
 
 Strategyspace stratspace = [
     (cooperate, cooperate),
-    (deflect, cooperate),
-    (cooperate, deflect),
-    (deflect, deflect)
+    (defect, cooperate),
+    (cooperate, defect),
+    (defect, defect)
 ];
 
 Payoff payoff = [

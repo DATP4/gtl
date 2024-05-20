@@ -38,10 +38,6 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     {
         EnterScope(new Scope());
         // Visits each function and declaration in the block and adds them to the vtable and ftable
-        foreach (var func in context.function())
-        {
-            _ = Visit(func);
-        }
         foreach (var dec in context.declaration())
         {
             _ = Visit(dec);
@@ -52,7 +48,7 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         return type;
     }
 
-    public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
+    public override object VisitVariable_dec([NotNull] GtlParser.Variable_decContext context)
     {
         // Checks if the type declaration and the type of the value matches
         // and also if the id declaration of the variable has already been used, if not the variable gets added to the vtable
@@ -115,19 +111,9 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         }
         // Visits the functions and declarations to add to vtable and ftable 
         // and returns the type of the expression
-        EnterScope(new Scope());
-        foreach (var func in context.block().function())
-        {
-            _ = Visit(func);
-        }
-        foreach (var dec in context.block().declaration())
-        {
-            _ = Visit(dec);
-        }
-        string ifLastStatement = (string)Visit(context.block().expr());
-        string ifElseLastStatement;
 
-        ExitScope();
+        string ifLastStatement = (string)Visit(context.block());
+        string ifElseLastStatement;
 
         // If there is 1 or more if else statements, they are all visitted, and it is checked if they have the same return type as the if statement
         if (context.elseif() != null)
@@ -160,40 +146,15 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new WrongTypeException("Elseif statement", "bool", exprtype);
         }
-        EnterScope(new Scope());
-        foreach (var func in context.block().function())
-        {
-            _ = Visit(func);
-        }
-        foreach (var dec in context.block().declaration())
-        {
-            _ = Visit(dec);
-        }
 
-        string type = (string)Visit(context.block().expr());
-        ExitScope();
-        return type;
+        return (string)Visit(context.block());
     }
 
 
     public override object VisitElse([NotNull] GtlParser.ElseContext context)
     {
         // Works in the same way as the if statement
-        EnterScope(new Scope());
-        foreach (var func in context.block().function())
-        {
-            _ = Visit(func);
-        }
-        foreach (var dec in context.block().declaration())
-        {
-            _ = Visit(dec);
-        }
-
-        string type = (string)Visit(context.block().expr());
-
-        ExitScope();
-
-        return type;
+        return (string)Visit(context.block());
     }
 
     /*

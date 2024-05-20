@@ -102,7 +102,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         // Seperates the boolean expression, translates the operator, and combines them again.
         string left = (string)Visit(context.expr(0));
         string right = (string)Visit(context.expr(1));
-        string op = context.op.Text;
+        string op = GtlDictionary.Translate("BooleanOperator", context.op.Text);
         return $"{left} {op} {right}";
     }
 
@@ -123,10 +123,6 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitBlock([NotNull] GtlParser.BlockContext context)
     {
         string retBlockString = "";
-        foreach (var func in context.function())
-        {
-            retBlockString += (string)Visit(func);
-        }
         foreach (var dec in context.declaration())
         {
             retBlockString += (string)Visit(dec);
@@ -141,43 +137,19 @@ public class TransVisitor : GtlBaseVisitor<object>
         // Beginning of if
         string retIfString = $"if {Visit(context.expr())} {'{'}\n";
 
-        // appends all functions and declarations to the if block
-        foreach (var func in context.block().function())
-        {
-            retIfString += Visit(func);
-        }
-        foreach (var dec in context.block().declaration())
-        {
-            retIfString += Visit(dec);
-        }
-        retIfString += Visit(context.block().expr());
+        // Adds all in block to the return string
+        retIfString += Visit(context.block());
 
         // Repeat above process for the else if blocks
         foreach (var elseIfBlock in context.elseif())
         {
             retIfString += $"\n{'}'} else if {Visit(elseIfBlock.expr())} {'{'}\n";
-            foreach (var func in elseIfBlock.block().function())
-            {
-                retIfString += Visit(func);
-            }
-            foreach (var dec in elseIfBlock.block().declaration())
-            {
-                retIfString += Visit(dec);
-            }
-            retIfString += Visit(elseIfBlock.block().expr());
+            retIfString += Visit(elseIfBlock.block());
         }
 
         // Repeats the process for the final else block
         retIfString += "\n} else {\n";
-        foreach (var func in context.@else().block().function())
-        {
-            retIfString += (string)Visit(func);
-        }
-        foreach (var dec in context.@else().block().declaration())
-        {
-            retIfString += (string)Visit(dec);
-        }
-        retIfString += (string)Visit(context.@else().block().expr()) + "}\n";
+        retIfString += (string)Visit(context.@else().block()) + "}\n";
         return retIfString;
     }
 
@@ -212,15 +184,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         }
 
         // Adds all other statements of the body
-        foreach (var func in context.block().function())
-        {
-            retFnString += Visit(func);
-        }
-        foreach (var dec in context.block().declaration())
-        {
-            retFnString += Visit(dec);
-        }
-        retFnString += Visit(context.block().expr());
+        retFnString += Visit(context.block());
 
         retFnString += "\n}";
         ExitFunctionScope();
@@ -323,7 +287,7 @@ public class TransVisitor : GtlBaseVisitor<object>
     {
         return $"!{Visit(context.expr())}";
     }
-    public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
+    public override object VisitVariable_dec([NotNull] GtlParser.Variable_decContext context)
     {
         // Adds a the variable declared to the vtable of the current scope.
         GetCurrentScope().AddVariable(context.ID().GetText(), (string)Visit(context.expr()));

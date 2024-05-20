@@ -1,4 +1,4 @@
-Moves = [a, b, cooperate, deflect];
+Moves = [a, b, cooperate, defect];
 
 // Declare actions
 Action a1 = (gamestate.lastMove("p2") == gamestate.lastMove("p3")) then a;

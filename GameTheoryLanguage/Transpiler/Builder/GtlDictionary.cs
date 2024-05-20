@@ -13,6 +13,17 @@ public class GtlDictionary
             {"+", "+"},
             {"-", "-"}
        }},
+       {"BooleanOperator", new Dictionary<string, string>(){
+            {"<", "<"},
+            {">", ">"},
+            {"<=", "<="},
+            {">=", ">="},
+            {"==", "=="},
+            {"!=", "!="},
+            {"&&", "&&"},
+            {"||", "||"},
+            {"^^", "!="}
+       }},
        {"Type", new Dictionary<string, string>(){
             {"int", "i32"},
             {"real", "f32"},

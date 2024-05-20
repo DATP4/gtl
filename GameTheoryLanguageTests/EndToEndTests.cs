@@ -8,7 +8,7 @@ namespace GameTheoryLanguageTests;
 public class EndToEndTests
 
 {
-    public string WholeGameString = "Moves = [a, b, cooperate, deflect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
+    public string WholeGameString = "Moves = [a, b, cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
     public string NoMoveString = "Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
     public static int Testcounter = 1;
     public static string Assertstring = "";
@@ -101,16 +101,16 @@ public class EndToEndTests
     }
     private void ActionDeclarationTest()
     {
-        Createtest("Moves = [a, b, cooperate, deflect]; Action turn = (TRUE) then a;" + NoMoveString, "assert_eq!(turn.act_move, Moves::a);\nlet Condition::Expression(expr) = turn.condition;\nassert_eq!((expr.b_val)(&gamestate), true)", "action");
-        Createtest("Moves = [a, b, cooperate, deflect]; Action turn = (gamestate.turn == 1) then a;" + NoMoveString, "assert_eq!(turn.act_move, Moves::a);\nlet Condition::Expression(expr) = turn.condition;\nassert_eq!((expr.b_val)(&gamestate), false);\ngamestate.turn = 1;\nassert_eq!((expr.b_val)(&gamestate), true);", "action");
+        Createtest("Moves = [a, b, cooperate, defect]; Action turn = (TRUE) then a;" + NoMoveString, "assert_eq!(turn.act_move, Moves::a);\nlet Condition::Expression(expr) = turn.condition;\nassert_eq!((expr.b_val)(&gamestate), true)", "action");
+        Createtest("Moves = [a, b, cooperate, defect]; Action turn = (gamestate.turn == 1) then a;" + NoMoveString, "assert_eq!(turn.act_move, Moves::a);\nlet Condition::Expression(expr) = turn.condition;\nassert_eq!((expr.b_val)(&gamestate), false);\ngamestate.turn = 1;\nassert_eq!((expr.b_val)(&gamestate), true);", "action");
     }
     private void StrategyDeclarationTest()
     {
-        Createtest("Moves = [a, b, cooperate, deflect]; Action turn = (TRUE) then a; Strategy strat = [turn];" + NoMoveString, "assert_eq!(strat.strat[0].act_move, Moves::a)", "strategy");
+        Createtest("Moves = [a, b, cooperate, defect]; Action turn = (TRUE) then a; Strategy strat = [turn];" + NoMoveString, "assert_eq!(strat.strat[0].act_move, Moves::a)", "strategy");
     }
     private void PlayerDeclarationTest()
     {
-        Createtest("Moves = [a, b, cooperate, deflect]; Action turn = (TRUE) then a; Strategy strat = [turn]; Players p = [p1 chooses strat];" + NoMoveString, "assert_eq!(p.pl_and_strat[0].1.strat[0].act_move, Moves::a)", "player");
+        Createtest("Moves = [a, b, cooperate, defect]; Action turn = (TRUE) then a; Strategy strat = [turn]; Players p = [p1 chooses strat];" + NoMoveString, "assert_eq!(p.pl_and_strat[0].1.strat[0].act_move, Moves::a)", "player");
     }
     private void PayoffDeclarationTest()
     {
@@ -118,7 +118,7 @@ public class EndToEndTests
     }
     private void StrategySpaceDeclarationTest()
     {
-        Createtest("Moves = [a, b, cooperate, deflect]; Strategyspace stratspace = [(a, b), (b, a), (a, a), (b, b)];" + NoMoveString, "assert_eq!(stratspace.matrix[0], Moves::a);\nassert_eq!(stratspace.matrix[1], Moves::b);\nassert_eq!(stratspace.matrix[2], Moves::b);\nassert_eq!(stratspace.matrix[3], Moves::a);\nassert_eq!(stratspace.matrix[4], Moves::a);\nassert_eq!(stratspace.matrix[5], Moves::a);\nassert_eq!(stratspace.matrix[6], Moves::b);\nassert_eq!(stratspace.matrix[7], Moves::b)", "strategyspace");
+        Createtest("Moves = [a, b, cooperate, defect]; Strategyspace stratspace = [(a, b), (b, a), (a, a), (b, b)];" + NoMoveString, "assert_eq!(stratspace.matrix[0], Moves::a);\nassert_eq!(stratspace.matrix[1], Moves::b);\nassert_eq!(stratspace.matrix[2], Moves::b);\nassert_eq!(stratspace.matrix[3], Moves::a);\nassert_eq!(stratspace.matrix[4], Moves::a);\nassert_eq!(stratspace.matrix[5], Moves::a);\nassert_eq!(stratspace.matrix[6], Moves::b);\nassert_eq!(stratspace.matrix[7], Moves::b)", "strategyspace");
     }
     private void ProgramTest()
     {

@@ -17,7 +17,7 @@ statement
     ;
 
 block
-    : (function | declaration)* expr 
+    : (declaration)* expr 
     ;
 
 // Expressions
@@ -46,6 +46,11 @@ expr
 
 // Declarations
 declaration
+    : variable_dec
+    | function 
+    ;
+
+variable_dec
     : type ID '=' expr ';'
     ;
 
