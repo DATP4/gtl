@@ -1,4 +1,4 @@
-Moves t = [a, b, cooperate, deflect];
+Moves = [a, b, cooperate, deflect];
 
 // Declare actions
 Action turn1Coop = (gamestate.turn == 1) then cooperate;

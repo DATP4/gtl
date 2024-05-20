@@ -334,39 +334,40 @@ public class TransVisitor : GtlBaseVisitor<object>
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
         string returnString = "";
-        if (context.game_type() != null) {
-        if (context.game_type().GetText().Equals("Game"))
+        if (context.game_type() != null)
         {
-            returnString += $"let mut {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
+            if (context.game_type().GetText().Equals("Game"))
+            {
+                returnString += $"let mut {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
+                returnString += "{\n";
+                returnString += Visit(context.game_expr().game_tuple());
+                returnString += "};\n";
+                return returnString;
+            }
+            returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
             returnString += "{\n";
-            returnString += Visit(context.game_expr().game_tuple());
-            returnString += "};\n";
-            return returnString;
-        }
-        returnString += $"let {context.ID().GetText()}: {context.game_type().GetText()} = {context.game_type().GetText()}";
-        returnString += "{\n";
 
-        if (context.game_type().GetText().Equals("Strategyspace"))
-        {
-            returnString += VisitStrategySpace(context.game_expr().array());
+            if (context.game_type().GetText().Equals("Strategyspace"))
+            {
+                returnString += VisitStrategySpace(context.game_expr().array());
+            }
+            if (context.game_type().GetText().Equals("Strategy"))
+            {
+                returnString += VisitStrategy(context.game_expr().array());
+            }
+            if (context.game_type().GetText().Equals("Players"))
+            {
+                returnString += VisitPlayers(context.game_expr().array());
+            }
+            if (context.game_type().GetText().Equals("Payoff"))
+            {
+                returnString += VisitPayoff(context.game_expr().array());
+            }
+            if (context.game_type().GetText().Equals("Action"))
+            {
+                returnString += Visit(context.game_expr());
+            }
         }
-        if (context.game_type().GetText().Equals("Strategy"))
-        {
-            returnString += VisitStrategy(context.game_expr().array());
-        }
-        if (context.game_type().GetText().Equals("Players"))
-        {
-            returnString += VisitPlayers(context.game_expr().array());
-        }
-        if (context.game_type().GetText().Equals("Payoff"))
-        {
-            returnString += VisitPayoff(context.game_expr().array());
-        }
-        if (context.game_type().GetText().Equals("Action"))
-        {
-            returnString += Visit(context.game_expr());
-        }
-        } 
         else if (context.T_MOVES().GetText().Equals("Moves"))
         {
             List<string> moves = new List<string>();
