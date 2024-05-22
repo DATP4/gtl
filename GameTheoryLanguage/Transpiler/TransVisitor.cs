@@ -416,7 +416,7 @@ public class TransVisitor : GtlBaseVisitor<object>
         returnString += "pl_and_strat: vec![\n";
         foreach (var player in context.array_type())
         {
-            returnString += $"(\"{player.player().ID(0)}\".to_string(), {player.player().ID(1)}.clone()),\n";
+            returnString += $"({player.player().STRING()}.to_string(), {player.player().ID()}.clone()),\n";
         }
         returnString += "],\n";
 

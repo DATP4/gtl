@@ -8,7 +8,7 @@ namespace GameTheoryLanguageTests;
 [TestClass]
 public class TranspilerTests
 {
-    public string WholeGameString = "Moves = [cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
+    public string WholeGameString = "Moves = [cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [\"p1\" -> [1]]; Players testplayers = [\"p1\" chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
     [TestMethod]
     public void AssignmentTest()
     {

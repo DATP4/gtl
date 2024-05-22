@@ -8,8 +8,8 @@ namespace GameTheoryLanguageTests;
 public class EndToEndTests
 
 {
-    public string WholeGameString = "Moves = [a, b, cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
-    public string NoMoveString = "Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
+    public string WholeGameString = "Moves = [a, b, cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [\"p1\" -> [1]]; Players testplayers = [\"p1\" chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
+    public string NoMoveString = "Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [\"p1\" -> [1]]; Players testplayers = [\"p1\" chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
     public static int Testcounter = 1;
     public static string Assertstring = "";
     public static string Testtype = "";
@@ -110,11 +110,11 @@ public class EndToEndTests
     }
     private void PlayerDeclarationTest()
     {
-        Createtest("Moves = [a, b, cooperate, defect]; Action turn = (TRUE) then a; Strategy strat = [turn]; Players p = [p1 chooses strat];" + NoMoveString, "assert_eq!(p.pl_and_strat[0].1.strat[0].act_move, Moves::a)", "player");
+        Createtest("Moves = [a, b, cooperate, defect]; Action turn = (TRUE) then a; Strategy strat = [turn]; Players p = [\"p1\" chooses strat];" + NoMoveString, "assert_eq!(p.pl_and_strat[0].1.strat[0].act_move, Moves::a)", "player");
     }
     private void PayoffDeclarationTest()
     {
-        Createtest("Payoff p = [p1 -> [1, 2], p2 -> [2, 1]];" + WholeGameString, "assert_eq!(p.matrix[0][0], 1);\nassert_eq!(p.matrix[0][1], 2);\nassert_eq!(p.matrix[1][0], 2);\nassert_eq!(p.matrix[1][1], 1)", "payoff");
+        Createtest("Payoff p = [\"p1\" -> [1, 2], \"p2\" -> [2, 1]];" + WholeGameString, "assert_eq!(p.matrix[0][0], 1);\nassert_eq!(p.matrix[0][1], 2);\nassert_eq!(p.matrix[1][0], 2);\nassert_eq!(p.matrix[1][1], 1)", "payoff");
     }
     private void StrategySpaceDeclarationTest()
     {

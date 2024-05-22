@@ -248,7 +248,6 @@ impl<'a> Game<'_> {
         let number_of_players = self.players.pl_and_strat.len();
         let mut player_moves: Vec<(String, Moves)> = Vec::new();
         Payoff::get_player_moves(&choices, &mut player_moves, &mut 0);
-        println!("{:?}", player_moves);
         let mut player_points: Vec<(String, Moves, i32)> = Vec::new();
         self.pay_matrix
             .calc_points(&self.strat_space, &player_moves, &mut player_points, &mut 0);

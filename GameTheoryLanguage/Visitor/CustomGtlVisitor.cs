@@ -434,8 +434,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitPlayer([NotNull] GtlParser.PlayerContext context)
     {
         // checks that the player is given a strategy and then the player is added to the vtable
-        string id = context.ID(0).GetText();
-        string type = (string)VisitId(context.ID(1).GetText());
+        string id = context.STRING().GetText();
+        string type = (string)VisitId(context.ID().GetText());
         if (!type.Equals("Strategy"))
         {
             throw new DeclarationException("Strategy", type);
@@ -637,115 +637,5 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         string[] output = ["move"];
         ScopeStack.Peek().AddFunction("lastMove", [input, output]);
     }
-    /*
-    public string GetTypeFromStatement(GtlParser.StatementContext ctx)
-    {
-        string type = "";
-
-        if (ctx.expr() != null)
-        {
-            type = (string)Visit(ctx.expr());
-            return type;
-        }
-        if (ctx.declaration() != null)
-        {
-            return ctx.declaration().type().GetText();
-        }
-        else if (ctx.@if() != null)
-        {
-            foreach (var stmt in ctx.@if().statement())
-            {
-                type = GetTypeFromStatement(stmt);
-            }
-            return type;
-        }
-        else if (ctx.@if().@else() != null)
-        {
-            foreach (var stmt in ctx.@if().@else().statement())
-            {
-                type = GetTypeFromStatement(stmt);
-            }
-            return type;
-        }
-        else if (ctx.@if().elseif() != null)
-        {
-            foreach (var stmt in ctx.@if().elseif().statement())
-            {
-                type = GetTypeFromStatement(stmt);
-            }
-            return type;
-
-        }
-        else
-        {
-            throw new NotSupportedException("Dis statement is fcked");
-        }
-    }
-
-    public string GetTypeFromElseIf(GtlParser.ElseifContext ctx, string tp)
-    {
-        string type = "";
-
-        if (ctx.elseif() != null)
-        {
-            foreach (var stmt in ctx.@elseif().statement())
-            {
-                type = GetTypeFromStatement(stmt);
-            }
-            if (type != tp)
-            {
-                throw new NotSupportedException("Type in elseif doesn't match expected return type of function");
-            }
-            return GetTypeFromElseIf(ctx.elseif(), tp);
-        }
-        else if (ctx.@else() != null)
-        {
-            foreach (var stmt in ctx.@else().statement())
-            {
-                type = GetTypeFromStatement(stmt);
-            }
-            if (type != tp)
-            {
-                throw new NotSupportedException("Type in else doesn't match expected return type of function");
-            }
-            return type;
-        }
-        else if (ctx.statement() != null)
-        {
-            foreach (var stmt in ctx.statement())
-            {
-                type = GetTypeFromStatement(stmt);
-            }
-            if (type != tp)
-            {
-                throw new NotSupportedException("Type in elseif statement doesn't match return type of function");
-            }
-            return type;
-        }
-        else
-        {
-            throw new NotSupportedException("Error in else if statement");
-        }
-    }
-
-    public bool CheckElseInElseIf(GtlParser.ElseifContext ctx)
-    {
-        bool check = false;
-
-        if (ctx.elseif() != null)
-        {
-            return CheckElseInElseIf(ctx.elseif());
-        }
-        else if (ctx.@else() != null)
-        {
-            check = true;
-            return check;
-        }
-        else
-        {
-            return check;
-        }
-    }
-    */
 }
 

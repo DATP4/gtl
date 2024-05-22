@@ -131,7 +131,7 @@ action
     ;
 
 game_utility_function
-    : ID '->' array
+    : STRING '->' array
     ;
 
 game_tuple
@@ -139,7 +139,7 @@ game_tuple
     ;
 
 player
-    : ID CHOOSES ID
+    : STRING CHOOSES ID
     ;
 
 move

@@ -56,14 +56,14 @@ Strategyspace stratspace = [
 ];
 
 Payoff payoff = [
-    p1 -> [2,4,0,1],
-    p2 -> [2,0,4,1]
+    "p1" -> [2,4,0,1],
+    "p2" -> [2,0,4,1]
 ];
 
 
 Players p = [
-    p1 chooses aStrat1,
-    p2 chooses aStrat2
+    "p1" chooses aStrat1,
+    "p2" chooses aStrat2
 ];
 
 Game prisoners = (stratspace, p, payoff);
