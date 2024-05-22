@@ -34,3 +34,5 @@ jobs:
       run: dotnet test --filter "Classname=GameTheoryLanguageTests.TypecheckingTests"
     - name: Transpiler tests
       run: dotnet test --filter "Classname=GameTheoryLanguageTests.TranspilerTests"
+    - name: EndToEnd tests
+      run: dotnet test --filter "FullyQualifiedName=GameTheoryLanguageTests.EndToEndTests.SetupTests" && cd ./GameTheoryLanguageTests/EndToEndTests && cargo test

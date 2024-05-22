@@ -1,15 +1,15 @@
-Moves t = [a, b, cooperate, deflect];
+Moves = [a, b, cooperate, defect];
 
 // Declare actions
 Action turn1Coop = (gamestate.turn == 1) then cooperate;
-Action oppDeflect = (gamestate.lastMove("p2") == cooperate) then deflect;
-Action oppCooperate = (gamestate.lastMove("p2") == deflect) then cooperate;
-Action turn = (gamestate.turn == 4) then deflect;
+Action oppDefect = (gamestate.lastMove("p2") == cooperate) then defect;
+Action oppCooperate = (gamestate.lastMove("p2") == defect) then cooperate;
+Action turn = (gamestate.turn == 4) then defect;
 Action coop = () then cooperate;
 
 Strategy aStrat1 = [
     turn1Coop,
-    oppDeflect,
+    oppDefect,
     oppCooperate
 ];
 
@@ -19,9 +19,9 @@ Strategy aStrat2 = [
 
 Strategyspace stratspace = [
     (cooperate, cooperate),
-    (deflect, cooperate),
-    (cooperate, deflect),
-    (deflect, deflect)
+    (defect, cooperate),
+    (cooperate, defect),
+    (defect, defect)
 ];
 
 Payoff payoff = [

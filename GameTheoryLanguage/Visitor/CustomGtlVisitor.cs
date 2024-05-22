@@ -34,7 +34,21 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         return null!;
     }
 
-    public override object VisitDeclaration([NotNull] GtlParser.DeclarationContext context)
+    public override object VisitBlock([NotNull] GtlParser.BlockContext context)
+    {
+        EnterScope(new Scope());
+        // Visits each function and declaration in the block and adds them to the vtable and ftable
+        foreach (var dec in context.declaration())
+        {
+            _ = Visit(dec);
+        }
+
+        string type = (string)Visit(context.expr());
+        ExitScope();
+        return type;
+    }
+
+    public override object VisitVariable_dec([NotNull] GtlParser.Variable_decContext context)
     {
         // Checks if the type declaration and the type of the value matches
         // and also if the id declaration of the variable has already been used, if not the variable gets added to the vtable
@@ -70,42 +84,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         // This visits the node in the parsetree where the functions arguments are defined, which adds them to the vtable
         _ = Visit(context.arg_def());
 
-        string lastExpressionType = "";
+        // Visits the last expression to get the type of the returned value
+        string lastExpressionType = (string)Visit(context.block());
 
         string func_type = context.type().GetText();
-        // This keeps track of what the type of the last expression in the function is so we can check the return type
-        // It also visits each individual statement thereby typechecking them
-        foreach (var stmt in context.statement())
-        {
-            if (stmt.expr() != null)
-            {
-                lastExpressionType = (string)Visit(stmt.expr());
-            }
-            else if (stmt.declaration() != null)
-            {
-                lastExpressionType = (string)Visit(stmt.declaration());
-                continue;
-            }
-            else if (stmt.function() != null)
-            {
-                _ = Visit(stmt.function());
-                continue;
-            }
-            else if (stmt.game_variable_declaration() != null)
-            {
-                _ = Visit(stmt.game_variable_declaration());
-                continue;
-            }
-            else if (stmt.game_functions() != null)
-            {
-                _ = Visit(stmt.game_functions());
-                continue;
-            }
-            else if (stmt.print() != null)
-            {
-                _ = Visit(stmt.print());
-            }
-        }
 
         if (!lastExpressionType.Equals(func_type))
         {
@@ -127,38 +109,12 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new WrongTypeException("If statement", "bool", exprtype);
         }
-        EnterScope(new Scope());
-        string ifLastStatement = "";
-        string ifElseLastStatement = "";
-        // This checks the type of the last expression in the if statement in the same way it is done in a function
-        foreach (var stmt in context.statement())
-        {
-            if (stmt.expr() != null)
-            {
-                ifLastStatement = (string)Visit(stmt.expr());
-            }
-            else if (stmt.declaration() != null)
-            {
-                ifLastStatement = (string)Visit(stmt.declaration());
-            }
-            else if (stmt.function() != null)
-            {
-                _ = Visit(stmt.function());
-            }
-            else if (stmt.game_variable_declaration != null)
-            {
-                _ = Visit(stmt.game_variable_declaration());
-            }
-            else if (stmt.game_functions() != null)
-            {
-                _ = Visit(stmt.game_functions());
-            }
-            else if (stmt.print() != null)
-            {
-                _ = Visit(stmt.print());
-            }
-        }
-        ExitScope();
+        // Visits the functions and declarations to add to vtable and ftable 
+        // and returns the type of the expression
+
+        string ifLastStatement = (string)Visit(context.block());
+        string ifElseLastStatement;
+
         // If there is 1 or more if else statements, they are all visitted, and it is checked if they have the same return type as the if statement
         if (context.elseif() != null)
         {
@@ -172,6 +128,8 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
             }
 
         }
+        else
+        { return (string)Visit(context.block().expr()); }
         // finally the else statement is visitted and we check whether or not it has the same return type as the if statement
         ifElseLastStatement = (string)Visit(context.@else());
         if (ifLastStatement != ifElseLastStatement)
@@ -188,74 +146,15 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new WrongTypeException("Elseif statement", "bool", exprtype);
         }
-        EnterScope(new Scope());
-        string ifLastStatement = "";
-        foreach (var stmt in context.statement())
-        {
-            if (stmt.expr() != null)
-            {
-                ifLastStatement = (string)Visit(stmt.expr());
-            }
-            else if (stmt.declaration() != null)
-            {
-                ifLastStatement = (string)Visit(stmt.declaration());
-            }
-            else if (stmt.function() != null)
-            {
-                _ = Visit(stmt.function());
-            }
-            else if (stmt.game_variable_declaration != null)
-            {
-                _ = Visit(stmt.game_variable_declaration());
-            }
-            else if (stmt.game_functions() != null)
-            {
-                _ = Visit(stmt.game_functions());
-            }
-            else if (stmt.print() != null)
-            {
-                _ = Visit(stmt.print());
-            }
-        }
-        ExitScope();
-        return ifLastStatement;
+
+        return (string)Visit(context.block());
     }
 
 
     public override object VisitElse([NotNull] GtlParser.ElseContext context)
     {
         // Works in the same way as the if statement
-        EnterScope(new Scope());
-        string ifLastStatement = "";
-        foreach (var stmt in context.statement())
-        {
-            if (stmt.expr() != null)
-            {
-                ifLastStatement = (string)Visit(stmt.expr());
-            }
-            else if (stmt.declaration() != null)
-            {
-                ifLastStatement = (string)Visit(stmt.declaration());
-            }
-            else if (stmt.function() != null)
-            {
-                _ = Visit(stmt.function());
-            }
-            else if (stmt.game_variable_declaration != null)
-            {
-                _ = Visit(stmt.game_variable_declaration());
-            }
-            else if (stmt.game_functions() != null)
-            {
-                _ = Visit(stmt.game_functions());
-            }
-            else if (stmt.print() != null)
-            {
-                _ = Visit(stmt.print());
-            }
-        }
-        ExitScope();
-        return ifLastStatement;
+        return (string)Visit(context.block());
     }
 
     /*
@@ -547,10 +446,20 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     public override object VisitGame_variable_declaration([NotNull] GtlParser.Game_variable_declarationContext context)
     {
         // firstly checks if the declaration declares moves, if so said moves are added to the vtable
-        string gametype = context.game_type().GetText();
-        if (gametype.Equals("Moves"))
+        string gametype = "";
+        string movesType = "";
+        if (context.game_type() != null)
         {
-            GtlParser.Array_typeContext[] moves = context.game_expr().array().array_type();
+            gametype = context.game_type().GetText();
+        }
+        if (context.T_MOVES() != null)
+        {
+            movesType = context.T_MOVES().GetText();
+        }
+
+        if (movesType != "" && movesType.Equals("Moves"))
+        {
+            GtlParser.Array_typeContext[] moves = context.array().array_type();
             foreach (GtlParser.Array_typeContext move in moves)
             {
                 ScopeStack.Peek().AddVariable(move.GetText(), "move");

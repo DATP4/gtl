@@ -3,32 +3,34 @@ int x = 5;
 str dasdsa = "dsadas";
 print(dasdsa);
 
+bool test23 = TRUE ^^ TRUE;
+
 // Nonsensical function;
 intFunction : (int aVar) -> int {
     int y = x + 10 * 5;
 
     if (x < 10 * 5) then {
         int z = 10 / 5;
+        z
     }
     else if (x == 10) then {
-        x MOD 2;
+        x MOD 2
     }
     else {
         int z = 10 * 5;
-    };
-
-    x - 5;
+        z
+    }
 }
 
-intFunction(someVar);
+int funcTest = intFunction(someVar);
 
 boolFunction : () -> bool {
-    TRUE;
+    TRUE
 }
 
 bool a = boolFunction();
 
-Moves t = [cooperate, defect];
+Moves = [cooperate, defect];
 
 // Declare actions
 Action oppDefect = (gamestate.lastMove("p2") == cooperate) then cooperate;

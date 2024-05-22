@@ -42,7 +42,7 @@ class Types
         }
     }
 
-    public Type GetDeclarationType(GtlParser.DeclarationContext ctx)
+    public Type GetDeclarationType(GtlParser.Variable_decContext ctx)
     {
         var typeContext = ctx.type();
 
