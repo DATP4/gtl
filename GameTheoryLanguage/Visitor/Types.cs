@@ -73,27 +73,4 @@ class Types
             _ => throw new NotSupportedException($"Type '{typeText}' not supported."),
         };
     }
-
-    public Type GetArgType(GtlParser.Arg_defContext ctx)
-    {
-        _ = ctx.type();
-
-        //TODO: do something here
-
-        /*
-        switch (typeText)
-        {
-            case "int":
-                return typeof(int);
-            case "real":
-                return typeof(float);
-            case "bool":
-                return typeof(bool);
-            // Add more cases for other types as needed
-            default:
-                throw new NotSupportedException($"Type '{typeText}' not supported.");
-        }
-        */
-        return typeof(int);
-    }
 }

@@ -34,10 +34,6 @@ static void MyParseMethod()
     TransVisitor transpiler = new TransVisitor();
 
     _ = transpiler.VisitProgram(tree);
-
-
-    // Optionally print the parse tree for debugging
-    // Console.WriteLine(tree.ToStringTree(parser));
 }
 
 MyParseMethod();

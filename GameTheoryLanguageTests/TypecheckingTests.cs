@@ -8,7 +8,7 @@ namespace GameTheoryLanguageTests;
 public class TypecheckingTests
 
 {
-    public string WholeGameString = "Moves = [cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [p1 -> [1]]; Players testplayers = [p1 chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
+    public string WholeGameString = "Moves = [cooperate, defect]; Action testaction = () then cooperate; Strategy teststrategy = [testaction]; Strategyspace teststratspace = [(cooperate, cooperate)]; Payoff testpayoff = [\"p1\" -> [1]]; Players testplayers = [\"p1\" chooses teststrategy]; Game testgame = (teststratspace, testplayers, testpayoff); run(testgame, 4);";
     public string RunString = "run(id, 4);";
     [TestMethod]
     public void TestLiteral()
@@ -224,25 +224,6 @@ public class TypecheckingTests
         AssertFalse<FunctionCallException>(input7);
         AssertFalse<DuplicateNameException>(input8);
     }
-    /*
-    [TestMethod]
-    public void TestMemberAccess()
-    {
-        string input1 = "gamestate.lastMove(\"p2\");";
-        string input2 = "gamestate.turn;";
-        string input3 = "str x = \"p2\"; gamestate.lastMove(x);";
-        string input4 = "int x = 5; x.turn;";
-        string input5 = "gamestat.turn;";
-        string input6 = "int x = 5; gamestate.lastMove(x);";
-
-        AssertTrue(input1);
-        AssertTrue(input2);
-        AssertTrue(input3);
-        AssertFalse<WrongTypeException>(input4);
-        AssertFalse<VariableNotFoundException>(input5);
-        AssertFalse<WrongTypeException>(input6);
-    }
-    */
     [TestMethod]
     public void TestActionDeclaration()
     {
@@ -274,9 +255,9 @@ public class TypecheckingTests
     [TestMethod]
     public void TestPlayerDeclaration()
     {
-        string input1 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat];" + WholeGameString;
-        string input2 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses x, p2 chooses strat];" + WholeGameString;
-        string input3 = "Players p = [p1 chooses strat, p2 chooses strat];" + WholeGameString;
+        string input1 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat];" + WholeGameString;
+        string input2 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [\"p1\" chooses x, \"p2\" chooses strat];" + WholeGameString;
+        string input3 = "Players p = [\"p1\" chooses strat, \"p2\" chooses strat];" + WholeGameString;
 
 
         AssertTrue(input1);
@@ -286,9 +267,9 @@ public class TypecheckingTests
     [TestMethod]
     public void TestPayoffDeclaration()
     {
-        string input1 = "Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]];" + WholeGameString;
-        string input2 = "int x = 5; Payoff payoff = [p1 -> [1,4,0,x],p2 -> [1,x,4,2]];" + WholeGameString;
-        string input3 = "bool x = TRUE; Payoff payoff = [p1 -> [1,4,0,x],p2 -> [1,x,4,2]];" + WholeGameString;
+        string input1 = "Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]];" + WholeGameString;
+        string input2 = "int x = 5; Payoff payoff = [\"p1\" -> [1,4,0,x],\"p2\" -> [1,x,4,2]];" + WholeGameString;
+        string input3 = "bool x = TRUE; Payoff payoff = [\"p1\" -> [1,4,0,x],\"p2\" -> [1,x,4,2]];" + WholeGameString;
         string input4 = "Payoff payoff = (move, move, move);" + WholeGameString;
 
 
@@ -311,12 +292,12 @@ public class TypecheckingTests
     [TestMethod]
     public void TestGameTuple()
     {
-        string input1 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); run(g, 10);";
+        string input1 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat]; Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); run(g, 10);";
         string input2 = "Game g = (stratspace, p, payoff);" + RunString;
-        string input3 = "Moves = [move]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff);" + RunString;
-        string input4 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff);" + RunString;
-        string input5 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Game g = (stratspace, p, payoff);" + RunString;
-        string input6 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [p1 chooses strat, p2 chooses strat]; Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); run(g, TRUE);";
+        string input3 = "Moves = [move]; Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff);" + RunString;
+        string input4 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff);" + RunString;
+        string input5 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat]; Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]]; Game g = (stratspace, p, payoff);" + RunString;
+        string input6 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat]; Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]]; Strategyspace stratspace = [(move, move)]; Game g = (stratspace, p, payoff); run(g, TRUE);";
         string input7 = "int x = 5; Moves = [move]; Action a = () then move; run(x, 10);";
 
 

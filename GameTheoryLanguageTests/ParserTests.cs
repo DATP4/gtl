@@ -117,12 +117,12 @@ public class ParserTests
     [TestMethod]
     public void PayoffTest()
     {
-        string input1 = "Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]];" + RunString;
-        string input2 = "Payoff payoff = [p1 -> [x,y,z,b]];" + RunString;
-        string input3 = "Payoffs payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]];" + RunString;
-        string input4 = "Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2];" + RunString;
-        string input5 = "Payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]]" + RunString;
-        string input6 = "payoff payoff = [p1 -> [1,4,0,2],p2 -> [1,0,4,2]];" + RunString;
+        string input1 = "Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]];" + RunString;
+        string input2 = "Payoff payoff = [\"p1\" -> [x,y,z,b]];" + RunString;
+        string input3 = "Payoffs payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]];" + RunString;
+        string input4 = "Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2];" + RunString;
+        string input5 = "Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]]" + RunString;
+        string input6 = "payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]];" + RunString;
         string input7 = "payoff payoff = [[1,4,0,2], [1,4,0,2]];" + RunString;
 
         AssertTrue(input1);
@@ -168,9 +168,9 @@ public class ParserTests
     [TestMethod]
     public void PlayersTest()
     {
-        string input1 = "Players p = [p1 chooses a, p2 chooses b, p3 chooses c];" + RunString;
-        string input2 = "players p = [p1 chooses a, p2 chooses b, p3 chooses c];" + RunString;
-        string input3 = "int p = [p1 chooses a, p2 chooses b, p3 chooses c];" + RunString;
+        string input1 = "Players p = [\"p1\" chooses a, \"p2\" chooses b, \"p3\" chooses c];" + RunString;
+        string input2 = "players p = [\"p1\" chooses a, \"p2\" chooses b, \"p3\" chooses c];" + RunString;
+        string input3 = "int p = [\"p1\" chooses a, \"p2\" chooses b, \"p3\" chooses c];" + RunString;
         string input4 = "Players p = 1" + RunString;
 
         AssertTrue(input1);
