@@ -1,7 +1,6 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# This workflow will build the project and run all tests
 
-name: .NET
+name: run tests
 
 on:
   push:
