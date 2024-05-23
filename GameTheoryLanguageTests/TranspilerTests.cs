@@ -143,6 +143,93 @@ public class TranspilerTests
         AssertTrue(input6, output6);
         AssertIntegrationFalse(input6);
     }
+    [TestMethod]
+    public void TestActionDeclaration()
+    {
+        string input1 = "Moves = [move]; Action turn = (TRUE) then move;" + WholeGameString;
+        string input2 = "bool z = TRUE; Moves = [move]; Action turn = (z) then move;" + WholeGameString;
+        string input3 = "int z = 5; Moves = [move]; Action turn = (z) then move;" + WholeGameString;
+
+        string output1 = "let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::move,};";
+        string output2 = "let z = true;let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| z}),act_move: Moves::move,};";
+        string output3 = "let z = 5;let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| z}),act_move: Moves::move,};";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
+        AssertIntegrationFalse(input3);
+    }
+    [TestMethod]
+    public void TestStrategyDeclaration()
+    {
+        string input1 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn];" + WholeGameString;
+        string input2 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, turn, turn];" + WholeGameString;
+        string input3 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn, TRUE];" + WholeGameString;
+
+        string output1 = "let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::move,};let strat: Strategy = Strategy{strat: vec![turn.clone()],};";
+        string output2 = "let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::move,};let strat: Strategy = Strategy{strat: vec![turn.clone(), turn.clone(), turn.clone()],};";
+        string output3 = "let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::move,};let strat: Strategy = Strategy{strat: vec![turn.clone(), TRUE.clone()],};";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertTrue(input3, output3);
+        AssertIntegrationFalse(input3);
+    }
+    [TestMethod]
+    public void TestPlayerDeclaration()
+    {
+        string input1 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat];" + WholeGameString;
+        string input2 = "Moves = [move]; Action turn = (TRUE) then move; Strategy strat = [turn]; Strategy strat2 = [turn]; Players p = [\"p1\" chooses strat, \"p2\" chooses strat2];" + WholeGameString;
+
+        string output1 = "let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::move,};let strat: Strategy = Strategy{strat: vec![turn.clone()],};let p: Players = Players{pl_and_strat: vec![(\"p1\".to_string(), strat.clone()),(\"p2\".to_string(), strat.clone()),],};";
+        string output2 = "let turn: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::move,};let strat: Strategy = Strategy{strat: vec![turn.clone()],};let strat2: Strategy = Strategy{strat: vec![turn.clone()],};let p: Players = Players{pl_and_strat: vec![(\"p1\".to_string(), strat.clone()),(\"p2\".to_string(), strat2.clone()),],};";
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertIntegrationTrue(input2, output2);
+    }
+    [TestMethod]
+    public void TestPayoffDeclaration()
+    {
+        string input1 = "Payoff payoff = [\"p1\" -> [1,4,0,2],\"p2\" -> [1,0,4,2]];" + WholeGameString;
+        string input2 = "int x = 5; Payoff payoff = [\"p1\" -> [1,4,0,x],\"p2\" -> [1,x,4,2]];" + WholeGameString;
+        string input3 = "bool x = TRUE; Payoff payoff = [\"p1\" -> [1,4,0,x],\"p2\" -> [1,x,4,2]];" + WholeGameString;
+
+        string output1 = "let payoff: Payoff = Payoff{matrix: vec![vec![1, 4, 0, 2],vec![1, 0, 4, 2],],};";
+        string output2 = "let x = 5;let payoff: Payoff = Payoff{matrix: vec![vec![1, 4, 0, x],vec![1, x, 4, 2],],};";
+        string output3 = "let x = true;let payoff: Payoff = Payoff{matrix: vec![vec![1, 4, 0, x],vec![1, x, 4, 2],],};";
+
+        AssertTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertIntegrationTrue(input2, output2);
+        AssertTrue(input3, output3);
+        AssertIntegrationFalse(input3);
+
+    }
+    [TestMethod]
+    public void TestStrategySpaceDeclaration()
+    {
+        string input1 = "Moves = [defect, cooperate]; Strategyspace stratspace = [(cooperate, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + WholeGameString;
+        string input2 = "int x = 20;Moves = [defect, cooperate]; Strategyspace stratspace = [(x, cooperate),(defect, cooperate),(cooperate, defect),(defect, defect)];" + WholeGameString;
+
+        string output1 = "let stratspace: Strategyspace = Strategyspace{matrix: vec![Moves::cooperate, Moves::cooperate, Moves::defect, Moves::cooperate, Moves::cooperate, Moves::defect, Moves::defect, Moves::defect, ],};";
+        string output2 = "let x = 20;let stratspace: Strategyspace = Strategyspace{matrix: vec![Moves::x, Moves::cooperate, Moves::defect, Moves::cooperate, Moves::cooperate, Moves::defect, Moves::defect, Moves::defect, ],};";
+
+        AssertTrue(input1, output1);
+        AssertIntegrationTrue(input1, output1);
+        AssertTrue(input2, output2);
+        AssertIntegrationFalse(input2);
+    }
+    [TestMethod]
+    public void TestGameTuple()
+    {
+        string input1 = WholeGameString;
+
+        string output1 = "let testaction: Action = Action{condition: Condition::Expression(BoolExpression {b_val: |gamestate: &GameState| true}),act_move: Moves::cooperate,};let teststrategy: Strategy = Strategy{strat: vec![testaction.clone()],};let teststratspace: Strategyspace = Strategyspace{matrix: vec![Moves::cooperate, Moves::cooperate, ],};let testpayoff: Payoff = Payoff{matrix: vec![vec![1],],};let testplayers: Players = Players{pl_and_strat: vec![(\"p1\".to_string(), teststrategy.clone()),],};let mut testgame: Game = Game{game_state: &mut gamestate,strat_space: &teststratspace,players: &testplayers,pay_matrix: &testpayoff,};let finishedgame = Game::run(&mut testgame, &mut 4);";
+
+        AssertTrue(input1, output1);
+        AssertIntegrationTrue(input1, output1);
+    }
+
 
     private void AssertTrue(string input, string expectedOutput)
     {

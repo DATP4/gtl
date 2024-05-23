@@ -1,5 +1,24 @@
-#![allow(warnings)]
 mod library;
+use library::{Action, BoolExpression, Condition, Game, GameState, Moves, PayoffMatrix, Players, Strategy, StrategySpace};
+fn main()
+{
+
+let turn: Action = Action{
+condition: Condition::Expression(BoolExpression {
+b_val: |gamestate: &GameState| true}),
+act_move: Moves::move,
+};
+
+let strat: Strategy = Strategy{
+strat: vec![turn.clone(), TRUE.clone()],
+};
+
+
+let testaction: Action = Action{
+condition: Condition::Expression(BoolExpression {
+b_val: |gamestate: &GameState| true}),
+act_move: Moves::cooperate,
+};
 use library::{
     Action, BoolExpression, Condition, Game, GameState, Moves, Payoff, Players, Strategy,
     Strategyspace,
@@ -69,51 +88,35 @@ fn main() {
         act_move: Moves::cooperate,
     };
 
-    let otherwise: Action = Action {
-        condition: Condition::Expression(BoolExpression {
-            b_val: |gamestate: &GameState| true,
-        }),
-        act_move: Moves::defect,
-    };
+let teststrategy: Strategy = Strategy{
+strat: vec![testaction.clone()],
+};
 
-    let aStrat1: Strategy = Strategy {
-        strat: vec![oppDefect.clone(), oppCooperate.clone(), turn.clone()],
-    };
+let teststratspace: Strategyspace = Strategyspace{
+matrix: vec![
+Moves::cooperate, Moves::cooperate, 
+],
+};
 
-    let aStrat2: Strategy = Strategy {
-        strat: vec![otherwise.clone()],
-    };
+let testpayoff: Payoff = Payoff{
+matrix: vec![
+vec![1],
+],
+};
 
-    let stratspace: Strategyspace = Strategyspace {
-        matrix: vec![
-            Moves::cooperate,
-            Moves::cooperate,
-            Moves::defect,
-            Moves::cooperate,
-            Moves::cooperate,
-            Moves::defect,
-            Moves::defect,
-            Moves::defect,
-        ],
-    };
+let testplayers: Players = Players{
+pl_and_strat: vec![
+("p1".to_string(), teststrategy.clone()),
+],
+};
 
-    let payoff: Payoff = Payoff {
-        matrix: vec![vec![2, 4, 0, 1], vec![2, 0, 4, 1]],
-    };
+let mut testgame: Game = Game{
+game_state: &mut gamestate,
+strat_space: &teststratspace,
+players: &testplayers,
+pay_matrix: &testpayoff,
+};
 
-    let p: Players = Players {
-        pl_and_strat: vec![
-            ("p1".to_string(), aStrat1.clone()),
-            ("p2".to_string(), aStrat2.clone()),
-        ],
-    };
+let finishedgame = Game::run(&mut testgame, &mut 4);
 
-    let mut prisoners: Game = Game {
-        game_state: &mut gamestate,
-        strat_space: &stratspace,
-        players: &p,
-        pay_matrix: &payoff,
-    };
-
-    Game::run(&mut prisoners, &mut 5);
 }
