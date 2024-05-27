@@ -18,6 +18,7 @@ Following is the dependencies for installing and running the project, as well as
 
 - `dotnet` v8.0+
 - `antlr4`
+- `Rust`
 
 ### Using the project
 
@@ -33,6 +34,8 @@ Running the project:
 ```
 cd GameTheoryLanguage
 dotnet run
+cd output
+cargo run
 ```
 
 Running the tests:
