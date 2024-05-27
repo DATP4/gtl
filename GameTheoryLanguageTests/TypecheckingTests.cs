@@ -196,11 +196,15 @@ public class TypecheckingTests
         string input2 = "intFunction : (int x) -> int {if (TRUE) then {5} else {6}}" + WholeGameString;
         string input3 = "intFunction : (int x) -> int {int y = x + 10 * 5; 5.0}" + WholeGameString;
         string input4 = "intFunction : (int x) -> int {if (TRUE) then {5.0} else {5.0}}" + WholeGameString;
+        string input5 = "intFunction : (int x) -> int {if (TRUE) then {5} else {5}} int intFunction = 5;" + WholeGameString;
+        string input6 = "int intFunction = 5; intFunction : (int x) -> int {if (TRUE) then {5} else {5}}" + WholeGameString;
 
         AssertTrue(input1);
         AssertTrue(input2);
         AssertFalse<WrongTypeException>(input3);
         AssertFalse<WrongTypeException>(input4);
+        AssertFalse<DeclarationException>(input5);
+        AssertFalse<DeclarationException>(input6);
     }
     [TestMethod]
     public void TestFunctionCall()
