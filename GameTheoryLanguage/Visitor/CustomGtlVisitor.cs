@@ -63,6 +63,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
         {
             throw new DeclarationException($"Variable {variableID} already exists");
         }
+        if (ScopeStack.Peek().FtableContains(variableID))
+        {
+            throw new DeclarationException($"A function with the id {variableID} already exists");
+        }
         ScopeStack.Peek().AddVariable(variableID, type);
         // This return the type of the variable being declared, as it is needed to typecheck functions and if/else expressions
         return type;
@@ -71,6 +75,10 @@ public class CustomGtlVisitor : GtlBaseVisitor<object>
     {
         // First the function is added to the function table, this is done before typechecking the function as it is required for the function to be called recursively
         string functionId = context.ID().GetText();
+        if (ScopeStack.Peek().VtableContains(functionId))
+        {
+            throw new DeclarationException($"A variable with the id {functionId} already exists");
+        }
         GtlParser.TypeContext[] typeContext = context.arg_def().type();
         string[] stringArray = [];
         foreach (var type in typeContext)
